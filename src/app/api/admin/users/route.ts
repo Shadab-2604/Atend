@@ -26,7 +26,7 @@ export async function POST(req: Request) {
   try {
     await connectDB();
     const body = await req.json();
-    const { name, username, password, role, email } = body;
+    const { name, username, password, role, email, startDate: reqStartDate, endDate: reqEndDate } = body;
 
     if (!username || !password || !name) {
       return NextResponse.json({ error: "Name, username, and password are required." }, { status: 400 });
@@ -38,13 +38,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: `Username "${cleanUsername}" is already taken.` }, { status: 409 });
     }
 
+    let userRole = role ? String(role).trim() : "intern";
+    let finalStartDate = reqStartDate ? String(reqStartDate).trim() : "";
+    let finalEndDate = reqEndDate ? String(reqEndDate).trim() : "";
+
+    // If role is intern and startDate is provided without endDate, default to +45 days
+    if (userRole === "intern" && finalStartDate && !finalEndDate) {
+      const sDate = new Date(finalStartDate);
+      if (!isNaN(sDate.getTime())) {
+        const eDate = new Date(sDate);
+        eDate.setDate(eDate.getDate() + 45);
+        finalEndDate = eDate.toISOString().split("T")[0];
+      }
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await User.create({
       name: String(name).trim(),
       username: cleanUsername,
       password: hashedPassword,
-      role: role || "intern",
+      role: userRole,
       email: email ? String(email).trim().toLowerCase() : "",
+      startDate: finalStartDate,
+      endDate: finalEndDate,
       currentStatus: "logged_out"
     });
 
@@ -57,6 +73,8 @@ export async function POST(req: Request) {
           username: newUser.username,
           role: newUser.role,
           email: newUser.email,
+          startDate: newUser.startDate,
+          endDate: newUser.endDate,
           currentStatus: newUser.currentStatus
         }
       },

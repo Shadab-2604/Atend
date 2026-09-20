@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
-export type AttendanceStatus = "present" | "working" | "absent" | "pending" | "half-day" | "holiday" | "upcoming";
+export type AttendanceStatus = "present" | "working" | "absent" | "pending" | "half-day" | "holiday" | "upcoming" | "ul" | "pl";
 
 export interface IAttendanceRecord extends Document {
   userId: Types.ObjectId;
@@ -51,7 +51,7 @@ const AttendanceSchema: Schema = new Schema(
     },
     status: {
       type: String,
-      enum: ["present", "working", "absent", "pending", "half-day", "holiday", "upcoming"],
+      enum: ["present", "working", "absent", "pending", "half-day", "holiday", "upcoming", "ul", "pl"],
       default: "upcoming"
     },
     workMode: {

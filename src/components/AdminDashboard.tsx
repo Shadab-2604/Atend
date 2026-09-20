@@ -28,8 +28,10 @@ import {
   EyeOff,
 } from "lucide-react";
 import { RejectionReasonModal } from "./RejectionReasonModal";
+import { CalendarView } from "./CalendarView";
 import { formatTo12Hour } from "@/lib/formatters";
-import { apiAdminGetAllAttendance } from "@/lib/api";
+import { apiAdminGetAllAttendance, apiAdminOverrideAttendance, apiGetAttendance } from "@/lib/api";
+import { Calendar as CalendarIcon } from "lucide-react";
 
 interface AdminDashboardProps {
   users: User[];
@@ -46,6 +48,7 @@ interface AdminDashboardProps {
     adminReason?: string
   ) => Promise<void>;
   loading?: boolean;
+  workingDaysMap?: Record<string, number>;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -59,8 +62,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   regularizationRequests = [],
   onReviewRegularization,
   loading = false,
+  workingDaysMap = {},
 }) => {
-  const [activeTab, setActiveTab] = useState<"monitoring" | "regularization" | "manage_users" | "attendance_history">("monitoring");
+  const [activeTab, setActiveTab] = useState<"monitoring" | "regularization" | "manage_users" | "attendance_history" | "member_calendar">("monitoring");
   const [searchQuery, setSearchQuery] = useState("");
 
   const [historyRecords, setHistoryRecords] = useState<any[]>([]);
@@ -77,6 +81,42 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [reviewingId, setReviewingId] = useState<string | null>(null);
 
+  // Member calendar inspection state
+  const [selectedCalendarUserId, setSelectedCalendarUserId] = useState<string>("");
+  const [userCalendarRecords, setUserCalendarRecords] = useState<any[]>([]);
+  const [loadingUserCalendar, setLoadingUserCalendar] = useState<boolean>(false);
+
+  const fetchUserCalendar = async (targetUserId: string) => {
+    if (!targetUserId) return;
+    setLoadingUserCalendar(true);
+    try {
+      const res = await apiGetAttendance(targetUserId);
+      setUserCalendarRecords(res.records || []);
+    } catch (err) {
+      console.error("Failed to fetch user calendar:", err);
+    } finally {
+      setLoadingUserCalendar(false);
+    }
+  };
+
+  const handleAdminOverrideAttendance = async (date: string, status: any) => {
+    if (!selectedCalendarUserId) return;
+    await apiAdminOverrideAttendance({
+      userId: selectedCalendarUserId,
+      date,
+      status,
+      notes: `Marked ${status} by Admin`,
+    });
+    await fetchUserCalendar(selectedCalendarUserId);
+    onRefresh();
+  };
+
+  const handleOpenMemberCalendar = (targetUserId: string) => {
+    setSelectedCalendarUserId(targetUserId);
+    setActiveTab("member_calendar");
+    fetchUserCalendar(targetUserId);
+  };
+
   // New user form state
   const [formData, setFormData] = useState({
     username: "",
@@ -84,6 +124,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     name: "",
     email: "",
     role: "intern",
+    startDate: "",
+    endDate: "",
   });
   const [addRoleType, setAddRoleType] = useState<string>("intern");
   const [addCustomRole, setAddCustomRole] = useState<string>("");
@@ -91,6 +133,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
+
+  const handleStartDateChange = (val: string) => {
+    let computedEndDate = formData.endDate;
+    if ((addRoleType === "intern" || formData.role === "intern") && val && !formData.endDate) {
+      const sDate = new Date(val);
+      if (!isNaN(sDate.getTime())) {
+        const eDate = new Date(sDate);
+        eDate.setDate(eDate.getDate() + 45);
+        computedEndDate = eDate.toISOString().split("T")[0];
+      }
+    }
+    setFormData((prev) => ({ ...prev, startDate: val, endDate: computedEndDate }));
+  };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,6 +166,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         name: "",
         email: "",
         role: "intern",
+        startDate: "",
+        endDate: "",
       });
       setAddRoleType("intern");
       setAddCustomRole("");
@@ -135,6 +192,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     email: "",
     role: "intern" as string,
     password: "",
+    startDate: "",
+    endDate: "",
   });
   const [editRoleType, setEditRoleType] = useState<string>("intern");
   const [editCustomRole, setEditCustomRole] = useState<string>("");
@@ -173,6 +232,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       email: userToEdit.email || "",
       role: userRole,
       password: "",
+      startDate: userToEdit.startDate || "",
+      endDate: userToEdit.endDate || "",
     });
     setEditError("");
     setEditSuccess("");
@@ -206,6 +267,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         username: editFormData.username,
         email: editFormData.email,
         role: finalRole,
+        startDate: editFormData.startDate,
+        endDate: editFormData.endDate,
       };
       if (editFormData.password.trim()) {
         payload.password = editFormData.password.trim();
@@ -459,6 +522,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           >
             <Clock className="w-4 h-4" />
             <span>Attendance History</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("member_calendar");
+              if (!selectedCalendarUserId && users.length > 0) {
+                const firstUser = users.find((u) => u.role !== "admin") || users[0];
+                const uid = firstUser.id || firstUser._id || "";
+                setSelectedCalendarUserId(uid);
+                fetchUserCalendar(uid);
+              }
+            }}
+            className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+              activeTab === "member_calendar" ? "shadow-sm" : "opacity-75 hover:opacity-100"
+            }`}
+            style={{
+              backgroundColor:
+                activeTab === "member_calendar" ? "var(--bg-surface-elevated)" : "transparent",
+              color: "var(--text-primary)",
+              border: activeTab === "member_calendar" ? "1px solid var(--border-medium)" : "1px solid transparent",
+            }}
+          >
+            <CalendarIcon className="w-4 h-4" />
+            <span>Inspect Member Calendar</span>
           </button>
         </div>
 
@@ -984,6 +1072,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           {/* Actions */}
                           <td className="py-3.5 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenMemberCalendar(u.id || u._id || "")}
+                                className="p-1.5 rounded-lg border transition-all hover:brightness-125"
+                                style={{
+                                  backgroundColor: "var(--bg-surface-elevated)",
+                                  borderColor: "var(--border-subtle)",
+                                  color: "var(--accent-primary)",
+                                }}
+                                title={`Inspect ${u.name}'s Attendance Calendar`}
+                              >
+                                <CalendarIcon className="w-3.5 h-3.5" />
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => handleOpenEdit(u)}
@@ -1589,7 +1690,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             {u.email || <span style={{ color: "var(--text-muted)" }}>--</span>}
                           </td>
 
-                          {/* Role */}
+                          {/* Role / Designation */}
                           <td className="py-3.5 px-4">
                             <span
                               className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border inline-block"
@@ -1599,8 +1700,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 color: u.role === "admin" ? "var(--accent-primary)" : "var(--text-secondary)",
                               }}
                             >
-                              {u.role === "admin" ? "Administrator" : "Intern"}
+                              {u.role || "intern"}
                             </span>
+                            {u.startDate && (
+                              <div className="text-[10px] font-mono mt-0.5" style={{ color: "var(--text-muted)" }}>
+                                {u.startDate} {u.endDate ? `→ ${u.endDate}` : ""}
+                              </div>
+                            )}
                           </td>
 
                           {/* Presence */}
@@ -1620,6 +1726,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           {/* Actions */}
                           <td className="py-3.5 px-4 text-right">
                             <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenMemberCalendar(u.id || u._id || "")}
+                                className="px-2.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1 transition-all hover:brightness-110 shadow-xs"
+                                style={{
+                                  backgroundColor: "var(--bg-surface-elevated)",
+                                  borderColor: "var(--border-medium)",
+                                  color: "var(--accent-primary)",
+                                }}
+                                title={`Inspect ${u.name}'s Attendance Calendar`}
+                              >
+                                <CalendarIcon className="w-3.5 h-3.5" />
+                                <span>Calendar</span>
+                              </button>
+
                               <button
                                 type="button"
                                 onClick={() => handleOpenEdit(u)}
@@ -1667,6 +1788,130 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </table>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* MEMBER CALENDAR INSPECTION & OVERRIDE TAB VIEW */}
+      {activeTab === "member_calendar" && (
+        <div className="space-y-6 animate-fade-in">
+          <div
+            className="rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 border shadow-xl transition-all"
+            style={{
+              backgroundColor: "var(--bg-surface)",
+              borderColor: "var(--border-subtle)",
+            }}
+          >
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center border shadow-xs"
+                style={{
+                  backgroundColor: "var(--accent-subtle)",
+                  borderColor: "var(--border-subtle)",
+                  color: "var(--accent-primary)",
+                }}
+              >
+                <CalendarIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-black" style={{ color: "var(--text-primary)" }}>
+                  Member Attendance Calendar Inspection
+                </h3>
+                <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                  Select an employee or intern to view calendar and directly mark Present, Absent, Half Day, UL, or PL.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <label className="text-xs font-bold uppercase tracking-wider shrink-0" style={{ color: "var(--text-muted)" }}>
+                Select Member:
+              </label>
+              <select
+                value={selectedCalendarUserId}
+                onChange={(e) => {
+                  const uid = e.target.value;
+                  setSelectedCalendarUserId(uid);
+                  fetchUserCalendar(uid);
+                }}
+                className="w-full sm:w-64 px-3 py-2 text-xs font-bold rounded-xl border transition-colors cursor-pointer outline-none shadow-sm"
+                style={{
+                  backgroundColor: "var(--bg-surface-elevated)",
+                  borderColor: "var(--border-medium)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                {users.map((u) => (
+                  <option key={u.id || u._id} value={u.id || u._id}>
+                    {u.name} (@{u.username}) — {u.role || "intern"}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {selectedCalendarUserId ? (
+            (() => {
+              const targetUser = users.find((u) => (u.id || u._id) === selectedCalendarUserId);
+              return (
+                <div className="space-y-4">
+                  {targetUser && (
+                    <div
+                      className="p-3.5 rounded-xl border flex flex-wrap items-center justify-between gap-3 text-xs"
+                      style={{
+                        backgroundColor: "var(--bg-surface-elevated)",
+                        borderColor: "var(--border-subtle)",
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>
+                          {targetUser.name}
+                        </span>
+                        <span
+                          className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border"
+                          style={{
+                            backgroundColor: "var(--accent-subtle)",
+                            borderColor: "var(--border-subtle)",
+                            color: "var(--accent-primary)",
+                          }}
+                        >
+                          {targetUser.role || "intern"}
+                        </span>
+                        {targetUser.email && (
+                          <span className="font-mono text-xs" style={{ color: "var(--text-muted)" }}>
+                            {targetUser.email}
+                          </span>
+                        )}
+                      </div>
+
+                      {(targetUser.startDate || targetUser.endDate) && (
+                        <div className="font-mono text-xs" style={{ color: "var(--text-secondary)" }}>
+                          <span className="font-bold" style={{ color: "var(--text-muted)" }}>Duration: </span>
+                          <span>{targetUser.startDate || "Not set"} → {targetUser.endDate || "Not set"}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {loadingUserCalendar ? (
+                    <div className="p-12 text-center text-xs font-mono font-bold animate-pulse">
+                      Loading attendance calendar for selected member...
+                    </div>
+                  ) : (
+                    <CalendarView
+                      attendanceRecords={userCalendarRecords}
+                      workingDaysMap={workingDaysMap}
+                      onAdminOverrideStatus={handleAdminOverrideAttendance}
+                      isAdmin={true}
+                    />
+                  )}
+                </div>
+              );
+            })()
+          ) : (
+            <div className="p-12 text-center text-xs text-muted">
+              Select a member from the dropdown above to inspect their attendance calendar.
+            </div>
+          )}
         </div>
       )}
 
@@ -1867,6 +2112,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                 )}
               </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "var(--text-muted)" }}>
+                    Start Date (Optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => handleStartDateChange(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl text-xs font-mono border transition-colors outline-none"
+                    style={{
+                      backgroundColor: "var(--bg-surface-subtle)",
+                      borderColor: "var(--border-medium)",
+                      color: "var(--text-primary)",
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "var(--text-muted)" }}>
+                    End Date (Optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl text-xs font-mono border transition-colors outline-none"
+                    style={{
+                      backgroundColor: "var(--bg-surface-subtle)",
+                      borderColor: "var(--border-medium)",
+                      color: "var(--text-primary)",
+                    }}
+                  />
+                </div>
+              </div>
+              {addRoleType === "intern" && formData.startDate && formData.endDate && (
+                <p className="text-[10px] text-emerald-400 font-semibold">
+                  Default end date (+45 days) set automatically for Intern role.
+                </p>
+              )}
 
               <div
                 className="flex items-center justify-end gap-2 pt-4 border-t mt-4"
@@ -2079,6 +2364,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <span>This is the only admin account. Make another admin before changing this role.</span>
                   </p>
                 )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "var(--text-muted)" }}>
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    value={editFormData.startDate}
+                    onChange={(e) => setEditFormData({ ...editFormData, startDate: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl text-xs font-mono border transition-colors outline-none"
+                    style={{
+                      backgroundColor: "var(--bg-surface-subtle)",
+                      borderColor: "var(--border-medium)",
+                      color: "var(--text-primary)",
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "var(--text-muted)" }}>
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    value={editFormData.endDate}
+                    onChange={(e) => setEditFormData({ ...editFormData, endDate: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl text-xs font-mono border transition-colors outline-none"
+                    style={{
+                      backgroundColor: "var(--bg-surface-subtle)",
+                      borderColor: "var(--border-medium)",
+                      color: "var(--text-primary)",
+                    }}
+                  />
+                </div>
               </div>
 
               <div>

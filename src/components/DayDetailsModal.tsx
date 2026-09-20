@@ -27,6 +27,8 @@ interface DayDetailsModalProps {
   isSunday?: boolean;
   isSaturday?: boolean;
   onOpenRegularize?: (date: string) => void;
+  onAdminOverrideStatus?: (date: string, status: AttendanceStatus) => Promise<void>;
+  isAdmin?: boolean;
 }
 
 export const DayDetailsModal: React.FC<DayDetailsModalProps> = ({
@@ -39,8 +41,11 @@ export const DayDetailsModal: React.FC<DayDetailsModalProps> = ({
   isSunday = false,
   isSaturday = false,
   onOpenRegularize,
+  onAdminOverrideStatus,
+  isAdmin = false,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const [updatingStatus, setUpdatingStatus] = React.useState<boolean>(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -67,7 +72,7 @@ export const DayDetailsModal: React.FC<DayDetailsModalProps> = ({
   const status: AttendanceStatus =
     record?.status || (isSunday ? "holiday" : isWorkingDay ? "upcoming" : "holiday");
 
-  const isAbsent = status === "absent";
+  const isAbsent = status === "absent" || status === "ul" || status === "pl";
   const totalWorkingMins = isAbsent ? 0 : (record?.duration?.totalMinutes || 0);
   const breakMins = isAbsent ? 0 : (record?.breakMinutes || 0);
   const oooMins = isAbsent ? 0 : (record?.oooMinutes || 0);
@@ -75,6 +80,18 @@ export const DayDetailsModal: React.FC<DayDetailsModalProps> = ({
 
   const isFullDayGoal = totalWorkingMins >= 555;
   const canRegularize = (status === "half-day" || status === "absent") && !isSunday;
+
+  const handleAdminStatusClick = async (newStatus: AttendanceStatus) => {
+    if (!onAdminOverrideStatus) return;
+    setUpdatingStatus(true);
+    try {
+      await onAdminOverrideStatus(date, newStatus);
+    } catch (err) {
+      console.error("Admin status override error:", err);
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   return (
     <div
@@ -167,6 +184,10 @@ export const DayDetailsModal: React.FC<DayDetailsModalProps> = ({
                 ? "var(--status-break-bg)"
                 : status === "absent"
                 ? "var(--status-ooo-bg)"
+                : status === "ul"
+                ? "rgba(245, 158, 11, 0.12)"
+                : status === "pl"
+                ? "rgba(168, 85, 247, 0.12)"
                 : "var(--bg-surface-elevated)",
             borderColor:
               status === "present"
@@ -175,6 +196,10 @@ export const DayDetailsModal: React.FC<DayDetailsModalProps> = ({
                 ? "var(--status-break-border)"
                 : status === "absent"
                 ? "var(--status-ooo-border)"
+                : status === "ul"
+                ? "rgba(245, 158, 11, 0.35)"
+                : status === "pl"
+                ? "rgba(168, 85, 247, 0.35)"
                 : "var(--border-subtle)",
           }}
         >
@@ -189,6 +214,10 @@ export const DayDetailsModal: React.FC<DayDetailsModalProps> = ({
                     ? "var(--status-break-text)"
                     : status === "absent"
                     ? "var(--status-ooo-text)"
+                    : status === "ul"
+                    ? "#f59e0b"
+                    : status === "pl"
+                    ? "#a855f7"
                     : "var(--text-secondary)",
               }}
             >
@@ -204,15 +233,23 @@ export const DayDetailsModal: React.FC<DayDetailsModalProps> = ({
                     ? "var(--status-break-text)"
                     : status === "absent"
                     ? "var(--status-ooo-text)"
+                    : status === "ul"
+                    ? "#f59e0b"
+                    : status === "pl"
+                    ? "#a855f7"
                     : "var(--text-primary)",
               }}
             >
               {status === "present"
-                ? (record?.isAutoPunchOut ? "Full Day Present (Auto Punch-Out)" : "Full Day Present (9.15h+ with buffer)")
+                ? (record?.isAutoPunchOut ? "Full Day Present (Auto Punch-Out)" : "Full Day Present")
                 : status === "half-day"
-                ? (record?.isAutoPunchOut ? "Half-Day Recorded (Auto Punch-Out)" : "Half-Day Recorded (<9.15h)")
+                ? (record?.isAutoPunchOut ? "Half-Day Recorded (Auto Punch-Out)" : "Half-Day Recorded")
                 : status === "absent"
-                ? "Absent / Not Clocked In"
+                ? "Absent"
+                : status === "ul"
+                ? "UL (Unplanned Leave)"
+                : status === "pl"
+                ? "PL (Planned Leave)"
                 : status === "working"
                 ? "Active Working Shift"
                 : status === "pending"
@@ -230,11 +267,109 @@ export const DayDetailsModal: React.FC<DayDetailsModalProps> = ({
             {status === "half-day" && (
               <Timer className="w-6 h-6" style={{ color: "var(--status-break-text)" }} />
             )}
-            {status === "absent" && (
-              <AlertCircle className="w-6 h-6" style={{ color: "var(--status-ooo-text)" }} />
+            {(status === "absent" || status === "ul") && (
+              <AlertCircle className="w-6 h-6" style={{ color: status === "ul" ? "#f59e0b" : "var(--status-ooo-text)" }} />
+            )}
+            {status === "pl" && (
+              <FileCheck className="w-6 h-6" style={{ color: "#a855f7" }} />
             )}
           </div>
         </div>
+
+        {/* ADMIN OVERRIDE BUTTONS BAR */}
+        {onAdminOverrideStatus && (
+          <div
+            className="p-3.5 rounded-2xl border mb-5 space-y-2"
+            style={{
+              backgroundColor: "var(--bg-surface-elevated)",
+              borderColor: "var(--border-medium)",
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">
+                Admin Control: Mark Attendance
+              </span>
+              {updatingStatus && <span className="text-[10px] font-mono animate-pulse">Updating...</span>}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+              <button
+                type="button"
+                disabled={updatingStatus}
+                onClick={() => handleAdminStatusClick("present")}
+                className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition-all ${
+                  status === "present" ? "ring-2 ring-emerald-400" : "opacity-80 hover:opacity-100"
+                }`}
+                style={{
+                  backgroundColor: "var(--status-working-bg)",
+                  borderColor: "var(--status-working-border)",
+                  color: "var(--status-working-text)",
+                }}
+              >
+                Present
+              </button>
+              <button
+                type="button"
+                disabled={updatingStatus}
+                onClick={() => handleAdminStatusClick("absent")}
+                className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition-all ${
+                  status === "absent" ? "ring-2 ring-rose-400" : "opacity-80 hover:opacity-100"
+                }`}
+                style={{
+                  backgroundColor: "var(--status-ooo-bg)",
+                  borderColor: "var(--status-ooo-border)",
+                  color: "var(--status-ooo-text)",
+                }}
+              >
+                Absent
+              </button>
+              <button
+                type="button"
+                disabled={updatingStatus}
+                onClick={() => handleAdminStatusClick("half-day")}
+                className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition-all ${
+                  status === "half-day" ? "ring-2 ring-amber-400" : "opacity-80 hover:opacity-100"
+                }`}
+                style={{
+                  backgroundColor: "var(--status-break-bg)",
+                  borderColor: "var(--status-break-border)",
+                  color: "var(--status-break-text)",
+                }}
+              >
+                Half Day
+              </button>
+              <button
+                type="button"
+                disabled={updatingStatus}
+                onClick={() => handleAdminStatusClick("ul")}
+                className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition-all ${
+                  status === "ul" ? "ring-2 ring-amber-500" : "opacity-80 hover:opacity-100"
+                }`}
+                style={{
+                  backgroundColor: "rgba(245, 158, 11, 0.15)",
+                  borderColor: "rgba(245, 158, 11, 0.4)",
+                  color: "#f59e0b",
+                }}
+              >
+                UL (Unplanned)
+              </button>
+              <button
+                type="button"
+                disabled={updatingStatus}
+                onClick={() => handleAdminStatusClick("pl")}
+                className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition-all ${
+                  status === "pl" ? "ring-2 ring-purple-500" : "opacity-80 hover:opacity-100"
+                }`}
+                style={{
+                  backgroundColor: "rgba(168, 85, 247, 0.15)",
+                  borderColor: "rgba(168, 85, 247, 0.4)",
+                  color: "#a855f7",
+                }}
+              >
+                PL (Planned)
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mb-5">
           <div

@@ -22,6 +22,8 @@ export interface IUser extends Document {
   accumulatedWorkSeconds: number;
   accumulatedBreakSeconds: number;
   accumulatedOooSeconds: number;
+  startDate?: string;
+  endDate?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,6 +57,14 @@ const UserSchema: Schema = new Schema(
       type: String,
       default: "intern",
       trim: true
+    },
+    startDate: {
+      type: String,
+      default: ""
+    },
+    endDate: {
+      type: String,
+      default: ""
     },
     currentStatus: {
       type: String,

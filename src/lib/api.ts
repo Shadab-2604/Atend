@@ -86,6 +86,19 @@ export async function apiAdminGetAllAttendance(date?: string, userId?: string) {
   return apiRequest<{ success: boolean; records: any[] }>(`/admin/attendance${query}`);
 }
 
+export async function apiAdminOverrideAttendance(data: {
+  userId: string;
+  date: string;
+  status: string;
+  notes?: string;
+  workMode?: string;
+}) {
+  return apiRequest<{ success: boolean; record: any }>("/admin/attendance", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+}
+
 export async function apiAdminCreateUser(userData: any) {
   return apiRequest<{ success: boolean; user: any }>("/admin/users", {
     method: "POST",

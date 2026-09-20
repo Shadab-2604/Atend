@@ -14,7 +14,7 @@ export async function PUT(
     await connectDB();
     const { userId } = await params;
     const body = await req.json();
-    const { name, username, email, role, password } = body;
+    const { name, username, email, role, password, startDate, endDate } = body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -38,6 +38,14 @@ export async function PUT(
 
     if (email !== undefined) {
       user.email = String(email).trim().toLowerCase();
+    }
+
+    if (startDate !== undefined) {
+      user.startDate = String(startDate).trim();
+    }
+
+    if (endDate !== undefined) {
+      user.endDate = String(endDate).trim();
     }
 
     if (role && String(role).trim()) {

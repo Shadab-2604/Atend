@@ -1,6 +1,6 @@
 export type UserRole = "intern" | "admin" | string;
 export type PresenceStatus = "working" | "break" | "ooo" | "logged_out";
-export type AttendanceStatus = "present" | "working" | "absent" | "pending" | "half-day" | "holiday" | "upcoming";
+export type AttendanceStatus = "present" | "working" | "absent" | "pending" | "half-day" | "holiday" | "upcoming" | "ul" | "pl";
 export type WorkMode = "WFO" | "WFH";
 export type RegularizationStatus = "pending" | "approved" | "rejected";
 
@@ -24,6 +24,8 @@ export interface User {
   accumulatedWorkSeconds?: number;
   accumulatedBreakSeconds?: number;
   accumulatedOooSeconds?: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface AttendanceRecord {

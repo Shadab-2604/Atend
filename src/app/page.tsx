@@ -633,6 +633,7 @@ export default function Home() {
             regularizationRequests={adminRegRequests}
             onReviewRegularization={handleAdminReviewRegularization}
             loading={adminLoading}
+            workingDaysMap={workingDaysMap}
           />
         ) : (
           /* EMPLOYEE / INTERN DASHBOARD VIEW: 2 DISTINCT OPTIONS */

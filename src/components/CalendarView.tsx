@@ -22,6 +22,8 @@ interface CalendarViewProps {
   attendanceRecords: AttendanceRecord[];
   workingDaysMap: Record<string, number>;
   onOpenRegularizeForDate?: (date: string) => void;
+  onAdminOverrideStatus?: (date: string, status: AttendanceStatus) => Promise<void>;
+  isAdmin?: boolean;
 }
 
 const MONTH_NAMES = [
@@ -60,6 +62,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   attendanceRecords,
   workingDaysMap,
   onOpenRegularizeForDate,
+  onAdminOverrideStatus,
+  isAdmin = false,
 }) => {
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [selectedMonth, setSelectedMonth] = useState<number>(8);
@@ -332,13 +336,25 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "var(--status-break-text)" }} />
             <span className="font-semibold" style={{ color: "var(--status-break-text)" }}>
-              Pending (Yellow)
+              Pending / Half Day
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "var(--status-ooo-text)" }} />
             <span className="font-semibold" style={{ color: "var(--status-ooo-text)" }}>
               Absent (Red)
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#f59e0b" }} />
+            <span className="font-semibold" style={{ color: "#f59e0b" }}>
+              UL (Unplanned)
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#a855f7" }} />
+            <span className="font-semibold" style={{ color: "#a855f7" }}>
+              PL (Planned)
             </span>
           </div>
         </div>
@@ -567,6 +583,20 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 badgeColor = "var(--status-break-text)";
                 badgeBorder = "var(--status-break-border)";
                 badgeText = "Half-Day";
+              } else if (status === "ul") {
+                cellBg = "rgba(245, 158, 11, 0.06)";
+                cellBorder = "rgba(245, 158, 11, 0.25)";
+                badgeBg = "rgba(245, 158, 11, 0.15)";
+                badgeColor = "#f59e0b";
+                badgeBorder = "rgba(245, 158, 11, 0.35)";
+                badgeText = "UL (Unplanned)";
+              } else if (status === "pl") {
+                cellBg = "rgba(168, 85, 247, 0.06)";
+                cellBorder = "rgba(168, 85, 247, 0.25)";
+                badgeBg = "rgba(168, 85, 247, 0.15)";
+                badgeColor = "#a855f7";
+                badgeBorder = "rgba(168, 85, 247, 0.35)";
+                badgeText = "PL (Planned)";
               }
 
               const hasRejectionReason =
@@ -921,6 +951,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           isSunday={new Date(`${selectedDateForDetails}T12:00:00`).getDay() === 0}
           isSaturday={new Date(`${selectedDateForDetails}T12:00:00`).getDay() === 6}
           onOpenRegularize={onOpenRegularizeForDate}
+          onAdminOverrideStatus={onAdminOverrideStatus}
+          isAdmin={isAdmin}
         />
       )}
     </div>
