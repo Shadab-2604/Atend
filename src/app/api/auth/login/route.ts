@@ -68,8 +68,8 @@ export async function POST(req: Request) {
         accumulatedOooSeconds: user.accumulatedOooSeconds || 0
       }
     });
-  } catch (err) {
+  } catch (err: any) {
     console.error("Login error:", err);
-    return NextResponse.json({ error: "Server error during login." }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Server error during login." }, { status: 500 });
   }
 }

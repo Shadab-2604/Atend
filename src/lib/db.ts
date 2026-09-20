@@ -4,17 +4,19 @@ import dns from "dns";
 import { User } from "../models/User";
 import { Settings } from "../models/Settings";
 
-// Always set DNS servers so Node.js can resolve mongodb+srv:// SRV records properly
-if (typeof dns.setDefaultResultOrder === "function") {
+// Set custom DNS servers ONLY in local environment (Vercel blocks external UDP DNS queries to 8.8.8.8)
+if (!process.env.VERCEL) {
+  if (typeof dns.setDefaultResultOrder === "function") {
+    try {
+      dns.setDefaultResultOrder("ipv4first");
+    } catch (e) {}
+  }
   try {
-    dns.setDefaultResultOrder("ipv4first");
+    dns.setServers(["8.8.8.8", "1.1.1.1"]);
   } catch (e) {}
 }
-try {
-  dns.setServers(["8.8.8.8", "1.1.1.1"]);
-} catch (e) {}
 
-const DEFAULT_MONGODB_URI = "mongodb+srv://skgamerpro123_db_user:DGOVJc6ZccJogDb0@cluster0.kyrm1d0.mongodb.net/attendance_tracker";
+const DEFAULT_MONGODB_URI = "mongodb+srv://skgamerpro123_db_user:DGOVJc6ZccJogDb0@cluster0.kyrm1d0.mongodb.net/attendance_tracker?retryWrites=true&w=majority";
 let MONGODB_URI = process.env.MONGODB_URI || DEFAULT_MONGODB_URI;
 if (MONGODB_URI.startsWith("mongodb+srv://") && !MONGODB_URI.includes("/attendance_tracker") && !MONGODB_URI.split("?")[0].split("/")[3]) {
   MONGODB_URI = MONGODB_URI.replace(".mongodb.net/", ".mongodb.net/attendance_tracker");
@@ -36,10 +38,6 @@ if (!global.mongooseCache) {
 const cached: MongooseCache = global.mongooseCache;
 
 export async function connectDB(): Promise<typeof mongoose> {
-  try {
-    dns.setServers(["8.8.8.8", "1.1.1.1"]);
-  } catch (e) {}
-
   if (cached.conn) {
     return cached.conn;
   }
@@ -47,6 +45,7 @@ export async function connectDB(): Promise<typeof mongoose> {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 5000,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then(async (m) => {

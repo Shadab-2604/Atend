@@ -19,8 +19,8 @@ export async function GET() {
 
     const { workingDaysList } = generateWorkingDays(settings.startDate, settings.totalWorkingDays);
     return NextResponse.json({ success: true, settings, workingDays: workingDaysList });
-  } catch (err) {
-    return NextResponse.json({ error: "Failed to fetch settings." }, { status: 500 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message || "Failed to fetch settings." }, { status: 500 });
   }
 }
 
