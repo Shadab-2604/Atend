@@ -107,6 +107,8 @@ const AttendanceSchema: Schema = new Schema(
   }
 );
 
-AttendanceSchema.index({ userId: 1, date: 1 }, { unique: true });
+if (mongoose.models.Attendance) {
+  delete mongoose.models.Attendance;
+}
 
-export const Attendance = mongoose.models.Attendance || mongoose.model<IAttendanceRecord>("Attendance", AttendanceSchema);
+export const Attendance = mongoose.model<IAttendanceRecord>("Attendance", AttendanceSchema);

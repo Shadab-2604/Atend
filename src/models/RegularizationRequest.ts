@@ -81,6 +81,8 @@ const RegularizationRequestSchema: Schema = new Schema(
 
 RegularizationRequestSchema.index({ userId: 1, date: 1 });
 
-export const RegularizationRequest =
-  mongoose.models.RegularizationRequest ||
-  mongoose.model<IRegularizationRequest>("RegularizationRequest", RegularizationRequestSchema);
+if (mongoose.models.RegularizationRequest) {
+  delete mongoose.models.RegularizationRequest;
+}
+
+export const RegularizationRequest = mongoose.model<IRegularizationRequest>("RegularizationRequest", RegularizationRequestSchema);
