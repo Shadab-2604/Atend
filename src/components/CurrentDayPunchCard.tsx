@@ -502,7 +502,7 @@ export const CurrentDayPunchCard: React.FC<CurrentDayPunchCardProps> = ({
               </span>
               {totalWorkSec >= 33300 ? (
                 <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1"
+                  className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1"
                   style={{
                     backgroundColor: "var(--status-working-bg)",
                     borderColor: "var(--status-working-border)",
@@ -511,6 +511,21 @@ export const CurrentDayPunchCard: React.FC<CurrentDayPunchCardProps> = ({
                 >
                   <CheckCircle2 className="w-3 h-3" /> Full Day Achieved
                 </span>
+              ) : onOpenRegularizeModal ? (
+                <button
+                  type="button"
+                  onClick={onOpenRegularizeModal}
+                  title="Click to request attendance regularization for this shift"
+                  className="text-[10px] font-bold px-2.5 py-1 rounded-full border flex items-center gap-1.5 transition-all hover:scale-105 hover:brightness-125 cursor-pointer shadow-md animate-pulse"
+                  style={{
+                    backgroundColor: "var(--status-break-bg)",
+                    borderColor: "var(--status-break-border)",
+                    color: "var(--status-break-text)",
+                  }}
+                >
+                  <span>{status === "logged_out" ? "Recorded as Half-Day" : "Under 9.15h (Half-Day threshold)"}</span>
+                  <span className="font-normal underline underline-offset-2">Regularize Day ➔</span>
+                </button>
               ) : (
                 <span
                   className="text-[10px] font-bold px-2 py-0.5 rounded-full border"

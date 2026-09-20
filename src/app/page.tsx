@@ -301,17 +301,7 @@ export default function Home() {
       }
     });
 
-    // Background sync interval (5 seconds) as fallback for instant updates
-    const syncInterval = setInterval(() => {
-      if (role === "admin") {
-        loadAdminData();
-      } else if (user) {
-        loadAttendance(user.id || user._id || "");
-      }
-    }, 5000);
-
     return () => {
-      clearInterval(syncInterval);
       socket.off("presence:updated");
       socket.off("user:created");
       socket.off("user:updated");
@@ -319,6 +309,29 @@ export default function Home() {
       socket.off("attendance:saved");
       socket.off("regularization:new");
       socket.off("regularization:reviewed");
+    };
+  }, [user, role, loadAttendance, loadAdminData]);
+
+  // Production Auto-Sync Polling (Runs every 4s & on window focus for real-time break, calendar, & presence updates)
+  useEffect(() => {
+    if (!user) return;
+
+    const syncLiveData = () => {
+      if (document.hidden) return;
+      if (role === "admin") {
+        loadAdminData();
+      } else {
+        const userId = user.id || user._id || "";
+        if (userId) loadAttendance(userId);
+      }
+    };
+
+    const interval = setInterval(syncLiveData, 4000);
+    window.addEventListener("focus", syncLiveData);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", syncLiveData);
     };
   }, [user, role, loadAttendance, loadAdminData]);
 
