@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db";
 import { User } from "@/models/User";
 import { Attendance } from "@/models/Attendance";
 import { RegularizationRequest } from "@/models/RegularizationRequest";
+import { emitRegularizationNew } from "@/lib/socketServer";
 
 // GET /api/attendance/regularize?userId=...
 export async function GET(req: Request) {
@@ -93,6 +94,9 @@ export async function POST(req: Request) {
       attendance.notes = `Regularization Pending (${request.workMode}, ${parsedHours}h): ${request.reason}`;
     }
     await attendance.save();
+
+    // Emit real-time WebSocket event
+    emitRegularizationNew(request);
 
     return NextResponse.json(
       {

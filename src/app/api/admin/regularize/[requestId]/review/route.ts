@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { RegularizationRequest } from "@/models/RegularizationRequest";
 import { Attendance } from "@/models/Attendance";
+import { emitRegularizationReviewed, emitAttendanceSaved } from "@/lib/socketServer";
 
 export async function POST(
   req: Request,
@@ -80,6 +81,10 @@ export async function POST(
       attendance.regularizationStatus = newStatus;
     }
     await attendance.save();
+
+    // Emit real-time WebSocket events
+    emitRegularizationReviewed(request);
+    emitAttendanceSaved(attendance);
 
     return NextResponse.json({
       success: true,

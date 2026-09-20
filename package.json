@@ -4,9 +4,9 @@
   "private": true,
   "description": "AttendFlow - Enterprise Internship Attendance & Presence Tracking System",
   "scripts": {
-    "dev": "next dev",
+    "dev": "node server.js",
     "build": "next build",
-    "start": "next start",
+    "start": "node server.js",
     "lint": "next lint",
     "seed": "node seed.js"
   },

@@ -196,6 +196,10 @@ export default function Home() {
   useEffect(() => {
     const socket = getSocket();
 
+    if (!socket.connected) {
+      socket.connect();
+    }
+
     if (user) {
       socket.emit("join", { userId: user.id || user._id, role: user.role });
     }
@@ -296,7 +300,17 @@ export default function Home() {
       }
     });
 
+    // Background sync interval (5 seconds) as fallback for instant updates
+    const syncInterval = setInterval(() => {
+      if (role === "admin") {
+        loadAdminData();
+      } else if (user) {
+        loadAttendance(user.id || user._id || "");
+      }
+    }, 5000);
+
     return () => {
+      clearInterval(syncInterval);
       socket.off("presence:updated");
       socket.off("user:created");
       socket.off("user:updated");

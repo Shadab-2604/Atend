@@ -4,6 +4,7 @@ import { User, PresenceStatus } from "@/models/User";
 import { Attendance } from "@/models/Attendance";
 import { formatDateKey } from "@/lib/calendarService";
 import { processAutoPunchOut } from "@/lib/autoPunchOutService";
+import { emitPresenceUpdate, emitAttendanceSaved } from "@/lib/socketServer";
 
 export async function POST(req: Request) {
   try {
@@ -158,27 +159,33 @@ export async function POST(req: Request) {
 
     await user.save();
 
+    const userData = {
+      id: user._id,
+      username: user.username,
+      name: user.name,
+      currentStatus: user.currentStatus,
+      loginTime: user.loginTime,
+      loginTimestamp: user.loginTimestamp,
+      logoutTime: user.logoutTime,
+      breakStartTime: user.breakStartTime,
+      totalBreakMinutes: user.totalBreakMinutes,
+      oooStartTime: user.oooStartTime,
+      totalOooMinutes: user.totalOooMinutes,
+      todayWorkingMinutes: user.todayWorkingMinutes,
+      lastStatusChangeTimestamp: user.lastStatusChangeTimestamp,
+      accumulatedWorkSeconds: user.accumulatedWorkSeconds || 0,
+      accumulatedBreakSeconds: user.accumulatedBreakSeconds || 0,
+      accumulatedOooSeconds: user.accumulatedOooSeconds || 0
+    };
+
+    // Emit real-time WebSocket events
+    emitPresenceUpdate(userData);
+    if (attendance) emitAttendanceSaved(attendance);
+
     return NextResponse.json({
       success: true,
       status: user.currentStatus,
-      user: {
-        id: user._id,
-        username: user.username,
-        name: user.name,
-        currentStatus: user.currentStatus,
-        loginTime: user.loginTime,
-        loginTimestamp: user.loginTimestamp,
-        logoutTime: user.logoutTime,
-        breakStartTime: user.breakStartTime,
-        totalBreakMinutes: user.totalBreakMinutes,
-        oooStartTime: user.oooStartTime,
-        totalOooMinutes: user.totalOooMinutes,
-        todayWorkingMinutes: user.todayWorkingMinutes,
-        lastStatusChangeTimestamp: user.lastStatusChangeTimestamp,
-        accumulatedWorkSeconds: user.accumulatedWorkSeconds || 0,
-        accumulatedBreakSeconds: user.accumulatedBreakSeconds || 0,
-        accumulatedOooSeconds: user.accumulatedOooSeconds || 0
-      },
+      user: userData,
       attendance
     });
   } catch (err) {

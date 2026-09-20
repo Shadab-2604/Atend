@@ -10,6 +10,8 @@
  * - 15 Sep: Present (Day #2, In: 8:40 AM, Out: 6:30 PM, Break: 1h, Net: 8h 50m)
  * - 16 Sep: Present (Day #3, In: 8:40 AM, Out: 6:30 PM, Break: 1h, Net: 8h 50m)
  * - 17 Sep: Present (Day #4, In: 8:40 AM, Out: 6:30 PM, Break: 1h, Net: 8h 50m)
+ * - 18 Sep: Present (Day #5, In: 9:04 AM, Out: 6:38 PM, Break: 4m, Net: 9h 30m)
+ * - 19 Sep: Present (Day #6, In: 8:07 AM, Out: 5:30 PM, Break: 91m, Net: 7h 52m)
  * - Ensures password is set to 'Shadab@123'
  * - Resets user presence to 'logged_out' for clean live testing today
  * - Leaves all other accounts (such as Admin) completely untouched
@@ -193,6 +195,44 @@ async function seedData() {
       breakMinutes: 60,
       oooMinutes: 0,
       notes: "Testing record: Present (In: 8:40 AM, Out: 6:30 PM, 1h break)"
+    },
+    {
+      userId: shadab._id,
+      date: "2026-09-18",
+      dayNumber: 5,
+      status: "present",
+      workMode: "WFO",
+      login: {
+        time: "09:04",
+        timestamp: new Date("2026-09-18T09:04:00")
+      },
+      logout: {
+        time: "18:38",
+        timestamp: new Date("2026-09-18T18:38:00")
+      },
+      duration: { totalMinutes: 570, hours: 9, minutes: 30 },
+      breakMinutes: 4,
+      oooMinutes: 0,
+      notes: "Testing record: Present (In: 9:04 AM, Out: 6:38 PM)"
+    },
+    {
+      userId: shadab._id,
+      date: "2026-09-19",
+      dayNumber: 6,
+      status: "present",
+      workMode: "WFO",
+      login: {
+        time: "08:07",
+        timestamp: new Date("2026-09-19T08:07:00")
+      },
+      logout: {
+        time: "17:30",
+        timestamp: new Date("2026-09-19T17:30:00")
+      },
+      duration: { totalMinutes: 472, hours: 7, minutes: 52 },
+      breakMinutes: 91,
+      oooMinutes: 0,
+      notes: "Testing record: Present (In: 8:07 AM, Out: 5:30 PM)"
     }
   ];
 

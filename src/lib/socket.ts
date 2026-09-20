@@ -7,7 +7,7 @@ let socket: Socket | null = null;
 export function getSocket(): Socket {
   if (!socket) {
     socket = io(SERVER_URL || typeof window !== "undefined" ? window.location.origin : "http://localhost:3000", {
-      autoConnect: false,
+      autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 3,
       reconnectionDelay: 2000
