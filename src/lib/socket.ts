@@ -4,13 +4,20 @@ const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "";
 
 let socket: Socket | null = null;
 
-export function getSocket(): Socket {
+export function getSocket(): Socket | null {
+  if (typeof window === "undefined") return null;
+
+  const isVercel = window.location.hostname.includes("vercel.app");
+  if (isVercel && !SERVER_URL) {
+    return null;
+  }
+
   if (!socket) {
-    socket = io(SERVER_URL || typeof window !== "undefined" ? window.location.origin : "http://localhost:3000", {
+    const targetUrl = SERVER_URL || window.location.origin;
+    socket = io(targetUrl, {
       autoConnect: true,
-      reconnection: true,
-      reconnectionAttempts: 3,
-      reconnectionDelay: 2000
+      reconnection: false,
+      transports: ["websocket", "polling"],
     });
 
     socket.on("connect", () => {
@@ -22,7 +29,9 @@ export function getSocket(): Socket {
     });
 
     socket.on("connect_error", () => {
-      // Gracefully silence websocket errors when running in serverless Vercel environment
+      if (socket) {
+        socket.disconnect();
+      }
     });
   }
 

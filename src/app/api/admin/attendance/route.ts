@@ -54,8 +54,8 @@ export async function POST(req: Request) {
 
     if (record) {
       record.status = status;
-      record.login = loginObj;
-      record.logout = logoutObj;
+      record.set("login", loginObj || undefined);
+      record.set("logout", logoutObj || undefined);
       record.duration = durationObj;
       if (notes !== undefined) record.notes = notes;
       if (workMode !== undefined) record.workMode = workMode;
@@ -68,16 +68,16 @@ export async function POST(req: Request) {
         dayNumber: 0,
         status,
         workMode: workMode || "WFO",
-        login: loginObj,
-        logout: logoutObj,
+        login: loginObj || undefined,
+        logout: logoutObj || undefined,
         duration: durationObj,
         notes: notes || `Marked ${status} by Admin`,
       });
     }
 
     return NextResponse.json({ success: true, record });
-  } catch (err) {
+  } catch (err: any) {
     console.error("Admin override attendance error:", err);
-    return NextResponse.json({ error: "Failed to update attendance status." }, { status: 500 });
+    return NextResponse.json({ error: err?.message || "Failed to update attendance status." }, { status: 500 });
   }
 }

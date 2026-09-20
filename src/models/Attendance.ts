@@ -60,12 +60,12 @@ const AttendanceSchema: Schema = new Schema(
       default: "WFO"
     },
     login: {
-      time: { type: String },
-      timestamp: { type: Date }
+      type: Schema.Types.Mixed,
+      default: undefined
     },
     logout: {
-      time: { type: String },
-      timestamp: { type: Date }
+      type: Schema.Types.Mixed,
+      default: undefined
     },
     duration: {
       totalMinutes: { type: Number, default: 0 },

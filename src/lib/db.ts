@@ -4,14 +4,20 @@ import dns from "dns";
 import { User } from "../models/User";
 import { Settings } from "../models/Settings";
 
-if (typeof dns.setDefaultResultOrder === "function") {
-  dns.setDefaultResultOrder("ipv4first");
+if (!process.env.VERCEL && process.env.NODE_ENV !== "production") {
+  if (typeof dns.setDefaultResultOrder === "function") {
+    dns.setDefaultResultOrder("ipv4first");
+  }
+  try {
+    dns.setServers(["8.8.8.8", "1.1.1.1"]);
+  } catch (e) {}
 }
-try {
-  dns.setServers(["8.8.8.8", "1.1.1.1"]);
-} catch (e) {}
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/attendance_tracker";
+const DEFAULT_MONGODB_URI = "mongodb+srv://skgamerpro123_db_user:DGOVJc6ZccJogDb0@cluster0.kyrm1d0.mongodb.net/attendance_tracker";
+let MONGODB_URI = process.env.MONGODB_URI || DEFAULT_MONGODB_URI;
+if (MONGODB_URI.startsWith("mongodb+srv://") && !MONGODB_URI.includes("/attendance_tracker") && !MONGODB_URI.split("?")[0].split("/")[3]) {
+  MONGODB_URI = MONGODB_URI.replace(".mongodb.net/", ".mongodb.net/attendance_tracker");
+}
 
 interface MongooseCache {
   conn: typeof mongoose | null;

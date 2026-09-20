@@ -195,6 +195,7 @@ export default function Home() {
   // Socket.io Real-Time Synchronization
   useEffect(() => {
     const socket = getSocket();
+    if (!socket) return;
 
     if (!socket.connected) {
       socket.connect();
