@@ -42,6 +42,15 @@ export async function connectDB(): Promise<typeof mongoose> {
     return cached.conn;
   }
 
+  if (typeof dns.setDefaultResultOrder === "function") {
+    try {
+      dns.setDefaultResultOrder("ipv4first");
+    } catch (e) {}
+  }
+  try {
+    dns.setServers(["8.8.8.8", "1.1.1.1"]);
+  } catch (e) {}
+
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
@@ -57,9 +66,20 @@ export async function connectDB(): Promise<typeof mongoose> {
 
   try {
     cached.conn = await cached.promise;
-  } catch (e) {
+  } catch (e: any) {
     cached.promise = null;
-    throw e;
+    console.warn("[MongoDB] Initial connection attempt failed, retrying with DNS fallback:", e?.message);
+    try {
+      dns.setServers(["8.8.8.8", "1.1.1.1"]);
+      cached.conn = await mongoose.connect(MONGODB_URI, {
+        bufferCommands: false,
+        serverSelectionTimeoutMS: 5000,
+      });
+      await seedInitialData();
+      return cached.conn;
+    } catch (retryErr) {
+      throw e;
+    }
   }
 
   return cached.conn;
