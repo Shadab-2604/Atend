@@ -4,14 +4,15 @@ import dns from "dns";
 import { User } from "../models/User";
 import { Settings } from "../models/Settings";
 
-if (!process.env.VERCEL && process.env.NODE_ENV !== "production") {
-  if (typeof dns.setDefaultResultOrder === "function") {
-    dns.setDefaultResultOrder("ipv4first");
-  }
+// Always set DNS servers so Node.js can resolve mongodb+srv:// SRV records properly
+if (typeof dns.setDefaultResultOrder === "function") {
   try {
-    dns.setServers(["8.8.8.8", "1.1.1.1"]);
+    dns.setDefaultResultOrder("ipv4first");
   } catch (e) {}
 }
+try {
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+} catch (e) {}
 
 const DEFAULT_MONGODB_URI = "mongodb+srv://skgamerpro123_db_user:DGOVJc6ZccJogDb0@cluster0.kyrm1d0.mongodb.net/attendance_tracker";
 let MONGODB_URI = process.env.MONGODB_URI || DEFAULT_MONGODB_URI;
@@ -35,6 +36,10 @@ if (!global.mongooseCache) {
 const cached: MongooseCache = global.mongooseCache;
 
 export async function connectDB(): Promise<typeof mongoose> {
+  try {
+    dns.setServers(["8.8.8.8", "1.1.1.1"]);
+  } catch (e) {}
+
   if (cached.conn) {
     return cached.conn;
   }
@@ -82,7 +87,7 @@ async function seedInitialData(): Promise<void> {
     const adminName = process.env.ADMIN_NAME || "Administrator";
     const adminEmail = process.env.ADMIN_EMAIL || "admin@attendflow.internal";
 
-    const existingAdmin = await User.findOne({ role: "admin" });
+    const existingAdmin = await User.findOne({ username: adminUsername });
     if (!existingAdmin) {
       const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
       await User.create({
