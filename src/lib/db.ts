@@ -61,7 +61,7 @@ export async function connectDB(): Promise<typeof mongoose> {
 
   if (!cached.promise) {
     const opts = {
-      bufferCommands: false,
+      bufferCommands: true,
       serverSelectionTimeoutMS: 5000,
     };
 
@@ -80,7 +80,7 @@ export async function connectDB(): Promise<typeof mongoose> {
     try {
       dns.setServers(["8.8.8.8", "1.1.1.1"]);
       cached.conn = await mongoose.connect(MONGODB_URI, {
-        bufferCommands: false,
+        bufferCommands: true,
         serverSelectionTimeoutMS: 5000,
       });
       await seedInitialDataOnce();
