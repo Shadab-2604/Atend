@@ -192,7 +192,7 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in"
     >
       <div
-        className="relative w-full max-w-6xl max-h-[94vh] flex flex-col rounded-3xl shadow-2xl border overflow-hidden transition-all"
+        className="relative w-full max-w-[calc(100vw-1rem)] sm:max-w-6xl max-h-[94vh] flex flex-col rounded-3xl shadow-2xl border overflow-hidden transition-all"
         style={{
           backgroundColor: "var(--bg-surface)",
           borderColor: "var(--border-medium)",
@@ -201,26 +201,26 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
       >
         {/* Top Header */}
         <div
-          className="flex flex-wrap items-center justify-between p-4 sm:p-5 border-b gap-3 shrink-0"
+          className="flex flex-wrap items-center justify-between p-3.5 sm:p-5 border-b gap-3 shrink-0"
           style={{
             backgroundColor: "var(--bg-surface-elevated)",
             borderColor: "var(--border-subtle)",
           }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <div
-              className="w-10 h-10 rounded-2xl flex items-center justify-center border shadow-sm shrink-0"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center border shadow-sm shrink-0"
               style={{
                 backgroundColor: "var(--bg-surface-subtle)",
                 borderColor: "var(--border-medium)",
                 color: "var(--text-primary)",
               }}
             >
-              <FileText className="w-5 h-5" />
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
+                <h2 className="text-sm sm:text-lg font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
                   Work Log — {userName}
                 </h2>
                 {isToday ? (
@@ -232,7 +232,7 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
                       color: "var(--status-working-text)",
                     }}
                   >
-                    <CheckCircle2 className="w-3 h-3" /> Today&apos;s Work Log
+                    <CheckCircle2 className="w-3 h-3" /> Today
                   </span>
                 ) : (
                   <span
@@ -244,12 +244,12 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
                     }}
                   >
                     {canEditContent ? <Edit3 className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
-                    {canEditContent ? "Admin Edit Override" : "Locked Date"}
+                    {canEditContent ? "Override" : "Locked"}
                   </span>
                 )}
               </div>
-              <p className="text-xs mt-0.5 font-mono" style={{ color: "var(--text-secondary)" }}>
-                Date: {formattedDateString} ({date})
+              <p className="text-[11px] sm:text-xs mt-0.5 font-mono" style={{ color: "var(--text-secondary)" }}>
+                Date: {date}
               </p>
             </div>
           </div>
@@ -257,14 +257,14 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl border transition-all hover:brightness-125"
+            className="p-1.5 sm:p-2 rounded-xl border transition-all hover:brightness-125"
             style={{
               backgroundColor: "var(--bg-surface-subtle)",
               borderColor: "var(--border-subtle)",
               color: "var(--text-muted)",
             }}
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
@@ -281,7 +281,7 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
             <div className="flex items-center gap-2">
               <Lock className="w-4 h-4 shrink-0" />
               <span>
-                <strong>Locked:</strong> Employees and interns can only create or edit work logs for <strong>Today ({todayIso})</strong>. Past and future logs are read-only.
+                <strong>Locked:</strong> Employees can only edit logs for <strong>Today ({todayIso})</strong>.
               </span>
             </div>
           </div>
@@ -321,7 +321,7 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
             Loading work log...
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto p-4 sm:p-5 grid grid-cols-1 lg:grid-cols-2 gap-5 min-h-[420px]">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 min-h-[360px]">
             {/* LEFT PANEL: WRITE / EDITOR */}
             <div className="flex flex-col rounded-2xl border overflow-hidden" style={{ borderColor: "var(--border-medium)" }}>
               <div
@@ -346,7 +346,7 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({
               {/* TipTap Formatting Toolbar */}
               {editor && canEditContent && (
                 <div
-                  className="flex flex-wrap items-center gap-1 p-2 border-b text-xs"
+                  className="flex items-center gap-1 p-2 border-b text-xs overflow-x-auto no-scrollbar touch-scroll max-w-full"
                   style={{
                     backgroundColor: "var(--bg-surface-subtle)",
                     borderColor: "var(--border-subtle)",

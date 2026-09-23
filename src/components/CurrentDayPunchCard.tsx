@@ -191,22 +191,22 @@ export const CurrentDayPunchCard: React.FC<CurrentDayPunchCardProps> = ({
   });
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in max-w-full overflow-hidden">
       <section
-        className="w-full rounded-2xl p-5 sm:p-7 border shadow-xl transition-all"
+        className="w-full rounded-2xl p-3.5 sm:p-7 border shadow-xl transition-all max-w-full overflow-hidden"
         style={{
           backgroundColor: "var(--bg-surface)",
           borderColor: "var(--border-subtle)",
         }}
       >
         <div
-          className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b mb-6"
+          className="flex flex-wrap items-center justify-between gap-3 pb-4 sm:pb-5 border-b mb-5 sm:mb-6"
           style={{ borderColor: "var(--border-subtle)" }}
         >
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
               <span
-                className="text-[11px] font-mono uppercase tracking-wider font-bold px-2 py-0.5 rounded border"
+                className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider font-bold px-2 py-0.5 rounded border"
                 style={{
                   backgroundColor: "var(--bg-surface-elevated)",
                   borderColor: "var(--border-subtle)",
@@ -217,7 +217,7 @@ export const CurrentDayPunchCard: React.FC<CurrentDayPunchCardProps> = ({
               </span>
               {dayNumber && (
                 <span
-                  className="text-[11px] font-mono uppercase tracking-wider font-bold px-2 py-0.5 rounded border"
+                  className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider font-bold px-2 py-0.5 rounded border"
                   style={{
                     backgroundColor: "var(--accent-subtle)",
                     borderColor: "var(--border-subtle)",
@@ -229,7 +229,7 @@ export const CurrentDayPunchCard: React.FC<CurrentDayPunchCardProps> = ({
               )}
             </div>
             <h2
-              className="text-lg sm:text-2xl font-black tracking-tight"
+              className="text-base sm:text-2xl font-black tracking-tight"
               style={{ color: "var(--text-primary)" }}
             >
               {todayDateFormatted}
@@ -241,7 +241,7 @@ export const CurrentDayPunchCard: React.FC<CurrentDayPunchCardProps> = ({
               type="button"
               disabled={loading}
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="px-4 py-2.5 rounded-xl border flex items-center gap-3 transition-all text-xs sm:text-sm font-bold shadow-sm hover:brightness-110 disabled:opacity-50"
+              className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border flex items-center gap-2 sm:gap-3 transition-all text-xs sm:text-sm font-bold shadow-sm hover:brightness-110 disabled:opacity-50"
               style={{
                 backgroundColor: "var(--bg-surface-elevated)",
                 borderColor: "var(--border-medium)",
@@ -259,7 +259,7 @@ export const CurrentDayPunchCard: React.FC<CurrentDayPunchCardProps> = ({
               />
               <span className="font-bold">{currentOption.label}</span>
               <ChevronDown
-                className={`w-4 h-4 transition-transform duration-200 ml-1 ${
+                className={`w-4 h-4 transition-transform duration-200 ml-0.5 sm:ml-1 ${
                   dropdownOpen ? "rotate-180" : ""
                 }`}
                 style={{ color: "var(--text-muted)" }}
@@ -365,9 +365,9 @@ export const CurrentDayPunchCard: React.FC<CurrentDayPunchCardProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-6">
           <div
-            className="p-4 rounded-xl border flex flex-col justify-between transition-all"
+            className="p-3 sm:p-4 rounded-xl border flex flex-col justify-between transition-all"
             style={{
               backgroundColor: "var(--bg-surface-elevated)",
               borderColor: status === "working" ? "var(--status-working-border)" : "var(--border-subtle)",
@@ -375,13 +375,13 @@ export const CurrentDayPunchCard: React.FC<CurrentDayPunchCardProps> = ({
           >
             <div className="flex items-center justify-between mb-1">
               <span
-                className="text-[11px] font-bold uppercase tracking-wider"
+                className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate"
                 style={{ color: "var(--text-muted)" }}
               >
                 Working Time
               </span>
               <span
-                className="w-2.5 h-2.5 rounded-full"
+                className="w-2.5 h-2.5 rounded-full shrink-0 ml-1"
                 style={{
                   backgroundColor: "var(--status-working-text)",
                   boxShadow: status === "working" ? "0 0 8px var(--status-working-text)" : "none",
@@ -389,15 +389,15 @@ export const CurrentDayPunchCard: React.FC<CurrentDayPunchCardProps> = ({
               />
             </div>
             <div
-              className="text-xl sm:text-2xl font-mono font-black tracking-tight mt-1"
+              className="text-lg sm:text-2xl font-mono font-black tracking-tight mt-1"
               style={{ color: "var(--status-working-text)" }}
             >
               {formatTimer(status === "working" ? sessionWorkSec : totalWorkSec)}
             </div>
             <div className="flex items-center justify-between text-[10px] mt-1.5" style={{ color: "var(--text-secondary)" }}>
-              <span>{status === "working" ? "Session Live" : "Total Logged"}</span>
+              <span>{status === "working" ? "Session" : "Total"}</span>
               <span className="font-mono">
-                {status === "working" ? `Total: ${formatTimer(totalWorkSec)}` : `${((totalWorkSec / 3600)).toFixed(1)}h Total`}
+                {status === "working" ? `Total: ${formatTimer(totalWorkSec)}` : `${((totalWorkSec / 3600)).toFixed(1)}h`}
               </span>
             </div>
           </div>
@@ -569,11 +569,11 @@ export const CurrentDayPunchCard: React.FC<CurrentDayPunchCardProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 text-[11px] pt-1" style={{ color: "var(--text-secondary)" }}>
-            <div className="flex items-center gap-3 font-mono">
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono">
               <span>Punch In: <strong style={{ color: "var(--text-primary)" }}>{formatTo12Hour(user.loginTime)}</strong></span>
-              <span>•</span>
+              <span className="hidden xs:inline">•</span>
               <span>Punch Out: <strong style={{ color: "var(--text-primary)" }}>{status === "logged_out" ? formatTo12Hour(user.logoutTime) : "In Progress"}</strong></span>
-              <span>•</span>
+              <span className="hidden xs:inline">•</span>
               <span>Status: <strong className="uppercase" style={{ color: currentOption.dotColor }}>{status.replace("_", " ")}</strong></span>
             </div>
             <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>

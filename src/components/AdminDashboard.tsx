@@ -478,20 +478,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   }, [activeTab, historyDate, historyUserId]);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in max-w-full overflow-hidden">
       {/* Admin Top Navigation Section Tabs */}
       <div
-        className="flex flex-wrap items-center justify-between gap-3 p-1.5 rounded-2xl border shadow-sm"
+        className="w-full max-w-full p-1.5 rounded-2xl border shadow-sm overflow-hidden"
         style={{
           backgroundColor: "var(--bg-surface)",
           borderColor: "var(--border-subtle)",
         }}
       >
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-scroll w-full pb-0.5">
           <button
             type="button"
             onClick={() => setActiveTab("monitoring")}
-            className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+            className={`px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 transition-all whitespace-nowrap shrink-0 ${
               activeTab === "monitoring" ? "shadow-sm" : "opacity-75 hover:opacity-100"
             }`}
             style={{
@@ -501,14 +501,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               border: activeTab === "monitoring" ? "1px solid var(--border-medium)" : "1px solid transparent",
             }}
           >
-            <Users className="w-4 h-4" />
-            <span>Team Directory & Live Status</span>
+            <Users className="w-4 h-4 shrink-0" />
+            <span>Team & Live Status</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab("regularization")}
-            className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+            className={`px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 transition-all whitespace-nowrap shrink-0 ${
               activeTab === "regularization" ? "shadow-sm" : "opacity-75 hover:opacity-100"
             }`}
             style={{
@@ -518,11 +518,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               border: activeTab === "regularization" ? "1px solid var(--border-medium)" : "1px solid transparent",
             }}
           >
-            <FileCheck className="w-4 h-4" />
-            <span>Attendance Regularization Requests</span>
+            <FileCheck className="w-4 h-4 shrink-0" />
+            <span>Regularization Requests</span>
             {pendingRequestsCount > 0 ? (
               <span
-                className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border"
+                className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border shrink-0"
                 style={{
                   backgroundColor: "var(--status-break-bg)",
                   borderColor: "var(--status-break-border)",
@@ -537,7 +537,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab("manage_users")}
-            className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+            className={`px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 transition-all whitespace-nowrap shrink-0 ${
               activeTab === "manage_users" ? "shadow-sm" : "opacity-75 hover:opacity-100"
             }`}
             style={{
@@ -547,10 +547,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               border: activeTab === "manage_users" ? "1px solid var(--border-medium)" : "1px solid transparent",
             }}
           >
-            <UserCog className="w-4 h-4" />
+            <UserCog className="w-4 h-4 shrink-0" />
             <span>Manage Users</span>
             <span
-              className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border"
+              className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border shrink-0"
               style={{
                 backgroundColor: "var(--accent-subtle)",
                 borderColor: "var(--border-subtle)",
@@ -564,7 +564,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab("attendance_history")}
-            className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+            className={`px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 transition-all whitespace-nowrap shrink-0 ${
               activeTab === "attendance_history" ? "shadow-sm" : "opacity-75 hover:opacity-100"
             }`}
             style={{
@@ -574,7 +574,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               border: activeTab === "attendance_history" ? "1px solid var(--border-medium)" : "1px solid transparent",
             }}
           >
-            <Clock className="w-4 h-4" />
+            <Clock className="w-4 h-4 shrink-0" />
             <span>Attendance History</span>
           </button>
 
@@ -589,7 +589,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 fetchUserCalendar(uid);
               }
             }}
-            className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+            className={`px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 transition-all whitespace-nowrap shrink-0 ${
               activeTab === "member_calendar" ? "shadow-sm" : "opacity-75 hover:opacity-100"
             }`}
             style={{
@@ -599,14 +599,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               border: activeTab === "member_calendar" ? "1px solid var(--border-medium)" : "1px solid transparent",
             }}
           >
-            <CalendarIcon className="w-4 h-4" />
+            <CalendarIcon className="w-4 h-4 shrink-0" />
             <span>Inspect Member Calendar</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab("worklog_audit")}
-            className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+            className={`px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 transition-all whitespace-nowrap shrink-0 ${
               activeTab === "worklog_audit" ? "shadow-sm" : "opacity-75 hover:opacity-100"
             }`}
             style={{
@@ -616,11 +616,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               border: activeTab === "worklog_audit" ? "1px solid var(--border-medium)" : "1px solid transparent",
             }}
           >
-            <FileText className="w-4 h-4 text-emerald-400" />
+            <FileText className="w-4 h-4 shrink-0 text-emerald-400" />
             <span>Work Log Audit</span>
             {workLogAuditData?.metrics?.missedCount > 0 && (
               <span
-                className="text-[10px] font-bold px-2 py-0.5 rounded-full border"
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0"
                 style={{
                   backgroundColor: "var(--status-ooo-bg)",
                   borderColor: "var(--status-ooo-border)",
@@ -631,17 +631,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </span>
             )}
           </button>
-        </div>
-
-        <div className="hidden md:flex items-center gap-2 px-3 text-xs" style={{ color: "var(--text-muted)" }}>
-          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "var(--text-muted)" }} />
-          <span>
-            {activeTab === "monitoring"
-              ? "Real-time presence monitoring & directory"
-              : activeTab === "regularization"
-              ? "Review, approve, or reject employee attendance regularizations"
-              : "Manage member accounts, edit user profiles, and manage permissions"}
-          </span>
         </div>
       </div>
 
@@ -883,8 +872,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </span>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+            <div className="overflow-x-auto touch-scroll no-scrollbar max-w-full">
+              <table className="w-full text-left text-xs min-w-[700px]">
                 <thead
                   className="uppercase tracking-wider font-bold border-b"
                   style={{
@@ -1300,8 +1289,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               borderColor: "var(--border-subtle)",
             }}
           >
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto touch-scroll no-scrollbar max-w-full">
+              <table className="w-full text-left border-collapse min-w-[650px]">
                 <thead>
                   <tr
                     className="border-b text-[11px] font-bold uppercase tracking-wider"
@@ -1676,8 +1665,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </span>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+            <div className="overflow-x-auto touch-scroll no-scrollbar max-w-full">
+              <table className="w-full text-left text-xs min-w-[680px]">
                 <thead
                   className="uppercase tracking-wider font-bold border-b"
                   style={{
@@ -2160,8 +2149,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               Loading daily work log status records...
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border" style={{ borderColor: "var(--border-subtle)" }}>
-              <table className="w-full text-left border-collapse text-xs">
+            <div className="overflow-x-auto touch-scroll no-scrollbar max-w-full rounded-xl border" style={{ borderColor: "var(--border-subtle)" }}>
+              <table className="w-full text-left border-collapse text-xs min-w-[650px]">
                 <thead>
                   <tr className="border-b text-[10px] font-bold uppercase tracking-wider" style={{ backgroundColor: "var(--bg-surface-elevated)", borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>
                     <th className="p-3">Name</th>
@@ -3019,8 +3008,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               borderColor: "var(--border-subtle)",
             }}
           >
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto touch-scroll no-scrollbar max-w-full">
+              <table className="w-full text-left border-collapse min-w-[700px]">
                 <thead>
                   <tr
                     className="border-b text-[11px] font-bold uppercase tracking-wider"

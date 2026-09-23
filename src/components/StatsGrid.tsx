@@ -22,23 +22,23 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
   const progressPercent = Math.min(100, Math.round((completed / totalDays) * 100));
 
   return (
-    <div className="mb-8 space-y-4">
+    <div className="mb-8 space-y-4 max-w-full overflow-hidden">
       {/* 6 Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
         {/* Card 1: Total Goal */}
         <div
-          className="rounded-2xl p-4 flex flex-col justify-between border shadow-sm transition-all hover:scale-[1.02]"
+          className="rounded-2xl p-3 sm:p-4 flex flex-col justify-between border shadow-sm transition-all hover:scale-[1.02]"
           style={{
             backgroundColor: "var(--bg-surface)",
             borderColor: "var(--border-subtle)",
           }}
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate" style={{ color: "var(--text-muted)" }}>
               Total Goal
             </span>
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center border"
+              className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center border shrink-0"
               style={{
                 backgroundColor: "var(--accent-subtle)",
                 borderColor: "var(--border-subtle)",
@@ -49,10 +49,10 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
             </div>
           </div>
           <div>
-            <span className="text-2xl sm:text-3xl font-black" style={{ color: "var(--text-primary)" }}>
+            <span className="text-xl sm:text-3xl font-black" style={{ color: "var(--text-primary)" }}>
               {totalDays}
             </span>
-            <span className="text-[11px] block mt-0.5" style={{ color: "var(--text-secondary)" }}>
+            <span className="text-[10px] sm:text-[11px] block mt-0.5 truncate" style={{ color: "var(--text-secondary)" }}>
               Working Days
             </span>
           </div>
@@ -60,18 +60,18 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
 
         {/* Card 2: Completed Days */}
         <div
-          className="rounded-2xl p-4 flex flex-col justify-between border shadow-sm transition-all hover:scale-[1.02]"
+          className="rounded-2xl p-3 sm:p-4 flex flex-col justify-between border shadow-sm transition-all hover:scale-[1.02]"
           style={{
             backgroundColor: "var(--bg-surface)",
             borderColor: "var(--status-working-border)",
           }}
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate" style={{ color: "var(--text-muted)" }}>
               Completed
             </span>
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center border"
+              className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center border shrink-0"
               style={{
                 backgroundColor: "var(--status-working-bg)",
                 borderColor: "var(--status-working-border)",
@@ -82,10 +82,10 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
             </div>
           </div>
           <div>
-            <span className="text-2xl sm:text-3xl font-black" style={{ color: "var(--status-working-text)" }}>
+            <span className="text-xl sm:text-3xl font-black" style={{ color: "var(--status-working-text)" }}>
               {completed}
             </span>
-            <span className="text-[11px] block mt-0.5" style={{ color: "var(--status-working-text)", opacity: 0.85 }}>
+            <span className="text-[10px] sm:text-[11px] block mt-0.5 truncate" style={{ color: "var(--status-working-text)", opacity: 0.85 }}>
               Days Finished
             </span>
           </div>
@@ -93,18 +93,18 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
 
         {/* Card 3: Remaining Days */}
         <div
-          className="rounded-2xl p-4 flex flex-col justify-between border shadow-sm transition-all hover:scale-[1.02]"
+          className="rounded-2xl p-3 sm:p-4 flex flex-col justify-between border shadow-sm transition-all hover:scale-[1.02]"
           style={{
             backgroundColor: "var(--bg-surface)",
             borderColor: "var(--status-break-border)",
           }}
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate" style={{ color: "var(--text-muted)" }}>
               Remaining
             </span>
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center border"
+              className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center border shrink-0"
               style={{
                 backgroundColor: "var(--status-break-bg)",
                 borderColor: "var(--status-break-border)",
@@ -115,10 +115,10 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
             </div>
           </div>
           <div>
-            <span className="text-2xl sm:text-3xl font-black" style={{ color: "var(--status-break-text)" }}>
+            <span className="text-xl sm:text-3xl font-black" style={{ color: "var(--status-break-text)" }}>
               {remaining}
             </span>
-            <span className="text-[11px] block mt-0.5" style={{ color: "var(--status-break-text)", opacity: 0.85 }}>
+            <span className="text-[10px] sm:text-[11px] block mt-0.5 truncate" style={{ color: "var(--status-break-text)", opacity: 0.85 }}>
               Days to Finish
             </span>
           </div>
@@ -126,18 +126,18 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
 
         {/* Card 4: Attendance Rate */}
         <div
-          className="rounded-2xl p-4 flex flex-col justify-between border shadow-sm transition-all hover:scale-[1.02]"
+          className="rounded-2xl p-3 sm:p-4 flex flex-col justify-between border shadow-sm transition-all hover:scale-[1.02]"
           style={{
             backgroundColor: "var(--bg-surface)",
             borderColor: "var(--border-subtle)",
           }}
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate" style={{ color: "var(--text-muted)" }}>
               Rate
             </span>
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center border"
+              className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center border shrink-0"
               style={{
                 backgroundColor: "var(--accent-subtle)",
                 borderColor: "var(--border-subtle)",
@@ -148,10 +148,10 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
             </div>
           </div>
           <div>
-            <span className="text-2xl sm:text-3xl font-black" style={{ color: "var(--accent-primary)" }}>
+            <span className="text-xl sm:text-3xl font-black" style={{ color: "var(--accent-primary)" }}>
               {percent}%
             </span>
-            <span className="text-[11px] block mt-0.5" style={{ color: "var(--text-secondary)" }}>
+            <span className="text-[10px] sm:text-[11px] block mt-0.5 truncate" style={{ color: "var(--text-secondary)" }}>
               Attendance Rate
             </span>
           </div>
@@ -159,18 +159,18 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
 
         {/* Card 5: Total Hours */}
         <div
-          className="rounded-2xl p-4 flex flex-col justify-between border shadow-sm transition-all hover:scale-[1.02]"
+          className="rounded-2xl p-3 sm:p-4 flex flex-col justify-between border shadow-sm transition-all hover:scale-[1.02]"
           style={{
             backgroundColor: "var(--bg-surface)",
             borderColor: "var(--border-subtle)",
           }}
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate" style={{ color: "var(--text-muted)" }}>
               Total Time
             </span>
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center border"
+              className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center border shrink-0"
               style={{
                 backgroundColor: "var(--bg-surface-elevated)",
                 borderColor: "var(--border-subtle)",
@@ -181,10 +181,10 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
             </div>
           </div>
           <div>
-            <span className="text-2xl sm:text-3xl font-black" style={{ color: "var(--text-primary)" }}>
+            <span className="text-xl sm:text-3xl font-black" style={{ color: "var(--text-primary)" }}>
               {totalHours}
             </span>
-            <span className="text-[11px] block mt-0.5" style={{ color: "var(--text-secondary)" }}>
+            <span className="text-[10px] sm:text-[11px] block mt-0.5 truncate" style={{ color: "var(--text-secondary)" }}>
               Total Hours
             </span>
           </div>
@@ -192,18 +192,18 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
 
         {/* Card 6: Average Hours */}
         <div
-          className="rounded-2xl p-4 flex flex-col justify-between border shadow-sm transition-all hover:scale-[1.02]"
+          className="rounded-2xl p-3 sm:p-4 flex flex-col justify-between border shadow-sm transition-all hover:scale-[1.02]"
           style={{
             backgroundColor: "var(--bg-surface)",
             borderColor: "var(--border-subtle)",
           }}
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate" style={{ color: "var(--text-muted)" }}>
               Avg / Day
             </span>
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center border"
+              className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center border shrink-0"
               style={{
                 backgroundColor: "var(--bg-surface-elevated)",
                 borderColor: "var(--border-subtle)",
@@ -214,10 +214,10 @@ export const StatsGrid: React.FC<StatsGridProps> = ({
             </div>
           </div>
           <div>
-            <span className="text-2xl sm:text-3xl font-black" style={{ color: "var(--text-primary)" }}>
+            <span className="text-xl sm:text-3xl font-black" style={{ color: "var(--text-primary)" }}>
               {avgHours}
             </span>
-            <span className="text-[11px] block mt-0.5" style={{ color: "var(--text-secondary)" }}>
+            <span className="text-[10px] sm:text-[11px] block mt-0.5 truncate" style={{ color: "var(--text-secondary)" }}>
               Hrs / Workday
             </span>
           </div>

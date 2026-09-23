@@ -104,7 +104,7 @@ export const DayDetailsModal: React.FC<DayDetailsModalProps> = ({
     >
       <div
         ref={modalRef}
-        className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl shadow-2xl p-5 sm:p-7 border transition-all"
+        className="relative w-full max-w-[calc(100vw-1.5rem)] sm:max-w-lg max-h-[88vh] overflow-y-auto rounded-3xl shadow-2xl p-4 sm:p-7 border transition-all"
         style={{
           backgroundColor: "var(--bg-surface)",
           borderColor: "var(--border-medium)",

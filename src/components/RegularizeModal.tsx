@@ -95,7 +95,7 @@ export const RegularizeModal: React.FC<RegularizeModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
       <div
-        className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-2xl shadow-2xl p-5 sm:p-6 border transition-all"
+        className="relative w-full max-w-[calc(100vw-1.5rem)] sm:max-w-lg max-h-[88vh] overflow-y-auto rounded-2xl shadow-2xl p-4 sm:p-6 border transition-all"
         style={{
           backgroundColor: "var(--bg-surface)",
           borderColor: "var(--border-medium)",

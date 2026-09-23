@@ -632,21 +632,21 @@ export default function Home() {
       {/* Supervisor Console Mode Switcher */}
       {role === "admin" && (
         <div
-          className="border-b px-4 md:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3 transition-colors"
+          className="border-b px-3 sm:px-6 md:px-8 py-2 flex flex-wrap items-center justify-between gap-2.5 transition-colors max-w-full overflow-hidden"
           style={{
             backgroundColor: "var(--bg-surface)",
             borderColor: "var(--border-subtle)",
           }}
         >
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar">
             <span
-              className="text-xs font-bold uppercase tracking-wider"
+              className="text-[10px] sm:text-xs font-bold uppercase tracking-wider shrink-0"
               style={{ color: "var(--text-muted)" }}
             >
-              Console Mode:
+              Mode:
             </span>
             <div
-              className="flex items-center gap-1 p-1 rounded-xl border shadow-inner overflow-x-auto"
+              className="flex items-center gap-1 p-1 rounded-xl border shadow-inner shrink-0"
               style={{
                 backgroundColor: "var(--bg-surface-elevated)",
                 borderColor: "var(--border-subtle)",
@@ -677,7 +677,7 @@ export default function Home() {
                   color: adminViewMode === "intern" ? "var(--accent-text)" : "var(--text-secondary)",
                 }}
               >
-                Employee / Member View
+                Employee View
               </button>
             </div>
           </div>
@@ -685,7 +685,7 @@ export default function Home() {
       )}
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 md:p-8 min-w-0 max-w-full overflow-hidden">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-6 md:p-8 min-w-0 max-w-full overflow-hidden">
         {role === "admin" && adminViewMode === "admin" ? (
           /* ADMIN DASHBOARD VIEW */
           <AdminDashboard

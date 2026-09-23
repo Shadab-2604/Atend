@@ -215,36 +215,36 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
   return (
     <div
-      className="w-full max-w-full overflow-hidden rounded-2xl p-3.5 sm:p-7 border shadow-xl mb-8 transition-all animate-fade-in"
+      className="w-full max-w-full overflow-hidden rounded-2xl p-3 sm:p-7 border shadow-xl mb-8 transition-all animate-fade-in"
       style={{
         backgroundColor: "var(--bg-surface)",
         borderColor: "var(--border-subtle)",
       }}
     >
       <div
-        className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b mb-6"
+        className="flex flex-wrap items-center justify-between gap-3 pb-4 sm:pb-5 border-b mb-5 sm:mb-6"
         style={{ borderColor: "var(--border-subtle)" }}
       >
         <div>
           <h2
-            className="text-lg sm:text-xl font-black flex items-center gap-2.5"
+            className="text-base sm:text-xl font-black flex items-center gap-2"
             style={{ color: "var(--text-primary)" }}
           >
-            <CalendarIcon className="w-5 h-5" style={{ color: "var(--text-primary)" }} />
-            Attendance Calendar & History
+            <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: "var(--text-primary)" }} />
+            Attendance Calendar
           </h2>
-          <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+          <p className="text-[11px] sm:text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
             Verified shift logs, working presence, and official attendance records.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar max-w-full">
           <div className="relative">
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(Number(e.target.value))}
               aria-label="Filter by month"
-              className="px-3 py-1.5 rounded-xl border text-xs sm:text-sm font-bold appearance-none pr-8 cursor-pointer transition-colors shadow-sm"
+              className="px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs sm:text-sm font-bold appearance-none pr-7 sm:pr-8 cursor-pointer transition-colors shadow-sm"
               style={{
                 backgroundColor: "var(--bg-surface-elevated)",
                 borderColor: "var(--border-medium)",
@@ -261,7 +261,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 </option>
               ))}
             </select>
-            <ChevronRight className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 rotate-90 pointer-events-none opacity-60" />
+            <ChevronRight className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 rotate-90 pointer-events-none opacity-60" />
           </div>
 
           <div className="relative">
@@ -269,7 +269,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
               aria-label="Filter by year"
-              className="px-3 py-1.5 rounded-xl border text-xs sm:text-sm font-bold appearance-none pr-8 cursor-pointer transition-colors shadow-sm"
+              className="px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs sm:text-sm font-bold appearance-none pr-7 sm:pr-8 cursor-pointer transition-colors shadow-sm"
               style={{
                 backgroundColor: "var(--bg-surface-elevated)",
                 borderColor: "var(--border-medium)",
@@ -286,11 +286,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 </option>
               ))}
             </select>
-            <ChevronRight className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 rotate-90 pointer-events-none opacity-60" />
+            <ChevronRight className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 rotate-90 pointer-events-none opacity-60" />
           </div>
 
           <div
-            className="flex items-center gap-1 p-1 rounded-xl border shadow-inner"
+            className="flex items-center gap-0.5 p-0.5 sm:p-1 rounded-xl border shadow-inner shrink-0"
             style={{
               backgroundColor: "var(--bg-surface-elevated)",
               borderColor: "var(--border-subtle)",
@@ -299,7 +299,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             <button
               type="button"
               onClick={handlePrevMonth}
-              className="p-1.5 rounded-lg transition-all hover:brightness-125"
+              className="p-1 sm:p-1.5 rounded-lg transition-all hover:brightness-125"
               style={{ color: "var(--text-secondary)" }}
               title="Previous Month"
             >
@@ -308,7 +308,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             <button
               type="button"
               onClick={handleNextMonth}
-              className="p-1.5 rounded-lg transition-all hover:brightness-125"
+              className="p-1 sm:p-1.5 rounded-lg transition-all hover:brightness-125"
               style={{ color: "var(--text-secondary)" }}
               title="Next Month"
             >
@@ -319,50 +319,50 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       </div>
 
       <div
-        className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border mb-5 text-xs"
+        className="flex flex-wrap items-center justify-between gap-2.5 p-2.5 sm:p-3 rounded-xl border mb-5 text-xs max-w-full overflow-hidden"
         style={{
           backgroundColor: "var(--bg-surface-subtle)",
           borderColor: "var(--border-subtle)",
         }}
       >
-        <div className="flex flex-wrap items-center gap-4">
-          <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
-            Status Legend:
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 text-[11px] sm:text-xs">
+          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+            Legend:
           </span>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "var(--status-working-text)" }} />
-            <span className="font-semibold" style={{ color: "var(--status-working-text)" }}>
-              Present (Green)
+            <span className="font-semibold text-[11px]" style={{ color: "var(--status-working-text)" }}>
+              Present
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "var(--status-break-text)" }} />
-            <span className="font-semibold" style={{ color: "var(--status-break-text)" }}>
-              Pending / Half Day
+            <span className="font-semibold text-[11px]" style={{ color: "var(--status-break-text)" }}>
+              Half Day
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "var(--status-ooo-text)" }} />
-            <span className="font-semibold" style={{ color: "var(--status-ooo-text)" }}>
-              Absent (Red)
+            <span className="font-semibold text-[11px]" style={{ color: "var(--status-ooo-text)" }}>
+              Absent
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#f59e0b" }} />
-            <span className="font-semibold" style={{ color: "#f59e0b" }}>
-              UL (Unplanned)
+            <span className="font-semibold text-[11px]" style={{ color: "#f59e0b" }}>
+              UL
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#a855f7" }} />
-            <span className="font-semibold" style={{ color: "#a855f7" }}>
-              PL (Planned)
+            <span className="font-semibold text-[11px]" style={{ color: "#a855f7" }}>
+              PL
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 font-mono text-[11px]" style={{ color: "var(--text-muted)" }}>
-          <span>Month Total:</span>
+        <div className="flex items-center gap-1.5 font-mono text-[10px] sm:text-[11px] flex-wrap" style={{ color: "var(--text-muted)" }}>
+          <span>Total:</span>
           <span style={{ color: "var(--status-working-text)" }}>{monthStats.presents} Present</span>
           <span>•</span>
           <span style={{ color: "var(--status-break-text)" }}>{monthStats.pendings} Pending</span>
