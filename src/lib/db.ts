@@ -37,6 +37,14 @@ if (!global.mongooseCache) {
 
 const cached: MongooseCache = global.mongooseCache;
 
+let hasSeeded = false;
+
+async function seedInitialDataOnce(): Promise<void> {
+  if (hasSeeded) return;
+  hasSeeded = true;
+  await seedInitialData();
+}
+
 export async function connectDB(): Promise<typeof mongoose> {
   if (cached.conn) {
     return cached.conn;
@@ -59,7 +67,7 @@ export async function connectDB(): Promise<typeof mongoose> {
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then(async (m) => {
       console.log(`[MongoDB] Connected successfully to: ${MONGODB_URI}`);
-      await seedInitialData();
+      await seedInitialDataOnce();
       return m;
     });
   }
@@ -75,7 +83,7 @@ export async function connectDB(): Promise<typeof mongoose> {
         bufferCommands: false,
         serverSelectionTimeoutMS: 5000,
       });
-      await seedInitialData();
+      await seedInitialDataOnce();
       return cached.conn;
     } catch (retryErr) {
       throw e;

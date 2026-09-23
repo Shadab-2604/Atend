@@ -16,7 +16,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const workLogs = await WorkLog.find({ userId }).sort({ date: -1 }).limit(100);
+    const workLogs = await WorkLog.find({ userId }).sort({ date: -1 }).limit(100).lean();
     return NextResponse.json({ success: true, workLogs });
   } catch (err: any) {
     console.error("GET user worklogs error:", err);

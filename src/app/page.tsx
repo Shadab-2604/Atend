@@ -27,6 +27,7 @@ import {
   apiGetRegularizationRequests,
   apiAdminGetRegularizationRequests,
   apiAdminReviewRegularization,
+  apiGetUserWorkLogs,
 } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
 import { LoginPortal } from "@/components/LoginPortal";
@@ -38,7 +39,7 @@ import { StatsGrid } from "@/components/StatsGrid";
 import { RegularizeModal } from "@/components/RegularizeModal";
 import { WorkLogModal } from "@/components/WorkLogModal";
 import { AdminDashboard } from "@/components/AdminDashboard";
-import { CheckCircle2, AlertTriangle, X, Bell, Calendar, Edit3, FileText } from "lucide-react";
+import { CheckCircle2, AlertTriangle, X, Bell, Calendar, Edit3, FileText, MessageSquare, Search, Lock } from "lucide-react";
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
@@ -92,11 +93,38 @@ export default function Home() {
   const [isRegularizeModalOpen, setIsRegularizeModalOpen] = useState(false);
   const [regularizeDefaultDate, setRegularizeDefaultDate] = useState<string | undefined>(undefined);
 
-  // Work Log Modal
+  // Work Log Modal & History State
   const [isWorkLogModalOpen, setIsWorkLogModalOpen] = useState(false);
   const [workLogDate, setWorkLogDate] = useState<string>("");
   const [workLogUserId, setWorkLogUserId] = useState<string>("");
   const [workLogUserName, setWorkLogUserName] = useState<string>("");
+
+  const [userWorkLogs, setUserWorkLogs] = useState<any[]>([]);
+  const [loadingUserWorkLogs, setLoadingUserWorkLogs] = useState<boolean>(false);
+  const [userWorkLogFilter, setUserWorkLogFilter] = useState<"recent" | "this_month" | "remarks" | "missed">("recent");
+  const [userWorkLogSearch, setUserWorkLogSearch] = useState<string>("");
+
+  const fetchUserWorkLogs = useCallback(async (targetUserId?: string) => {
+    const uid = targetUserId || (user ? (user.id || user._id) : "");
+    if (!uid) return;
+    setLoadingUserWorkLogs(true);
+    try {
+      const res = await apiGetUserWorkLogs(uid);
+      if (res.workLogs) {
+        setUserWorkLogs(res.workLogs);
+      }
+    } catch (err) {
+      console.error("Failed to fetch user work logs:", err);
+    } finally {
+      setLoadingUserWorkLogs(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user && employeeViewMode === "worklog") {
+      fetchUserWorkLogs(user.id || user._id);
+    }
+  }, [user, employeeViewMode, fetchUserWorkLogs]);
 
   const handleOpenWorkLog = (targetDate?: string, targetUserId?: string, targetUserName?: string) => {
     const now = new Date();
@@ -861,6 +889,7 @@ export default function Home() {
                     borderColor: "var(--border-subtle)",
                   }}
                 >
+                  {/* Header Bar */}
                   <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b" style={{ borderColor: "var(--border-subtle)" }}>
                     <div>
                       <h2 className="text-lg sm:text-xl font-black flex items-center gap-2.5" style={{ color: "var(--text-primary)" }}>
@@ -883,55 +912,191 @@ export default function Home() {
                         boxShadow: "0 4px 14px var(--accent-glow)",
                       }}
                     >
-                      <FileText className="w-4 h-4" />
+                      <Edit3 className="w-4 h-4" />
                       <span>Write / Edit Today&apos;s Work Log</span>
                     </button>
                   </div>
 
-                  {/* Today Status Banner */}
-                  <div
-                    className="p-4 rounded-2xl border flex flex-wrap items-center justify-between gap-3 text-xs"
-                    style={{
-                      backgroundColor: "var(--bg-surface-elevated)",
-                      borderColor: "var(--border-medium)",
-                    }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center border shrink-0"
+                  {/* Top Navigation Filter Pills */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border text-xs" style={{ backgroundColor: "var(--bg-surface-subtle)", borderColor: "var(--border-subtle)" }}>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="font-bold uppercase tracking-wider text-[10px] mr-1" style={{ color: "var(--text-muted)" }}>View Filters:</span>
+
+                      <button
+                        type="button"
+                        onClick={() => setUserWorkLogFilter("recent")}
+                        className={`px-3 py-1.5 rounded-lg border font-bold text-xs transition-all ${userWorkLogFilter === "recent" ? "shadow-xs" : "opacity-75"}`}
                         style={{
-                          backgroundColor: "var(--bg-surface-subtle)",
-                          borderColor: "var(--border-subtle)",
+                          backgroundColor: userWorkLogFilter === "recent" ? "var(--bg-surface-elevated)" : "transparent",
+                          borderColor: userWorkLogFilter === "recent" ? "var(--border-medium)" : "transparent",
+                          color: "var(--text-primary)",
                         }}
                       >
-                        <Calendar className="w-5 h-5 text-emerald-400" />
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider block" style={{ color: "var(--text-muted)" }}>
-                          Today&apos;s Status ({new Date().toISOString().split("T")[0]})
-                        </span>
-                        <h4 className="text-sm font-bold mt-0.5" style={{ color: "var(--text-primary)" }}>
-                          Today&apos;s Work Log Editor & Live Preview
-                        </h4>
-                      </div>
+                        Recent ({userWorkLogs.length})
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setUserWorkLogFilter("this_month")}
+                        className={`px-3 py-1.5 rounded-lg border font-bold text-xs transition-all ${userWorkLogFilter === "this_month" ? "shadow-xs" : "opacity-75"}`}
+                        style={{
+                          backgroundColor: userWorkLogFilter === "this_month" ? "var(--bg-surface-elevated)" : "transparent",
+                          borderColor: userWorkLogFilter === "this_month" ? "var(--border-medium)" : "transparent",
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        This Month
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setUserWorkLogFilter("remarks")}
+                        className={`px-3 py-1.5 rounded-lg border font-bold text-xs transition-all ${userWorkLogFilter === "remarks" ? "shadow-xs" : "opacity-75"}`}
+                        style={{
+                          backgroundColor: userWorkLogFilter === "remarks" ? "var(--bg-surface-elevated)" : "transparent",
+                          borderColor: userWorkLogFilter === "remarks" ? "var(--border-medium)" : "transparent",
+                          color: userWorkLogFilter === "remarks" ? "#818cf8" : "var(--text-secondary)",
+                        }}
+                      >
+                        With Admin Remarks 💬 ({userWorkLogs.filter((w) => w.adminRemark).length})
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setUserWorkLogFilter("missed")}
+                        className={`px-3 py-1.5 rounded-lg border font-bold text-xs transition-all ${userWorkLogFilter === "missed" ? "shadow-xs" : "opacity-75"}`}
+                        style={{
+                          backgroundColor: userWorkLogFilter === "missed" ? "var(--status-ooo-bg)" : "transparent",
+                          borderColor: userWorkLogFilter === "missed" ? "var(--status-ooo-border)" : "transparent",
+                          color: userWorkLogFilter === "missed" ? "var(--status-ooo-text)" : "var(--text-secondary)",
+                        }}
+                      >
+                        Missed Days 🔴 ({userWorkLogs.filter((w) => !w.hasSubmitted).length})
+                      </button>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleOpenWorkLog()}
-                      className="px-4 py-2 rounded-xl text-xs font-bold border transition-all hover:brightness-110 flex items-center gap-1.5"
-                      style={{
-                        backgroundColor: "var(--bg-surface-subtle)",
-                        borderColor: "var(--border-medium)",
-                        color: "var(--text-primary)",
-                      }}
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Open TipTap Split Work Log Editor</span>
-                    </button>
+                    {/* Search bar */}
+                    <div className="relative w-full sm:w-64">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "var(--text-muted)" }} />
+                      <input
+                        type="text"
+                        placeholder="Search work logs..."
+                        value={userWorkLogSearch}
+                        onChange={(e) => setUserWorkLogSearch(e.target.value)}
+                        className="w-full pl-8 pr-3 py-1.5 rounded-xl border text-xs font-semibold"
+                        style={{
+                          backgroundColor: "var(--bg-surface-elevated)",
+                          borderColor: "var(--border-medium)",
+                          color: "var(--text-primary)",
+                        }}
+                      />
+                    </div>
                   </div>
 
-                  {/* Quick Guide & Rules Info */}
+                  {/* Dark File Explorer Inspired Table */}
+                  {loadingUserWorkLogs ? (
+                    <div className="p-12 text-center text-xs font-mono font-bold animate-pulse">
+                      Loading work log history...
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto rounded-xl border" style={{ borderColor: "var(--border-subtle)" }}>
+                      <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr className="border-b text-[10px] font-bold uppercase tracking-wider" style={{ backgroundColor: "var(--bg-surface-elevated)", borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>
+                            <th className="p-3">Date</th>
+                            <th className="p-3">Worklog Title</th>
+                            <th className="p-3">Status</th>
+                            <th className="p-3">Admin Remark</th>
+                            <th className="p-3 text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
+                          {userWorkLogs
+                            .filter((log: any) => {
+                              const nowYM = new Date().toISOString().slice(0, 7);
+                              if (userWorkLogFilter === "this_month" && !log.date.startsWith(nowYM)) return false;
+                              if (userWorkLogFilter === "remarks" && !log.adminRemark) return false;
+                              if (userWorkLogFilter === "missed" && log.hasSubmitted) return false;
+
+                              if (userWorkLogSearch) {
+                                const q = userWorkLogSearch.toLowerCase();
+                                const titleMatch = (log.workLogTitle || log.title || "").toLowerCase().includes(q);
+                                const dateMatch = (log.date || "").includes(q);
+                                return titleMatch || dateMatch;
+                              }
+                              return true;
+                            })
+                            .map((log: any) => {
+                              const isToday = log.date === todayIso;
+                              const displayTitle = log.workLogTitle || log.title || (log.hasSubmitted ? "Daily Work Log" : "No Work Log Submitted");
+
+                              return (
+                                <tr key={log.date} className="hover:bg-white/5 transition-colors">
+                                  {/* 1. Date */}
+                                  <td className="p-3 font-mono font-semibold" style={{ color: "var(--text-secondary)" }}>
+                                    {log.date}
+                                    {isToday && (
+                                      <span className="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                        TODAY
+                                      </span>
+                                    )}
+                                  </td>
+
+                                  {/* 2. Worklog Title */}
+                                  <td className="p-3 max-w-xs truncate font-medium" style={{ color: log.hasSubmitted ? "var(--text-primary)" : "var(--text-muted)" }}>
+                                    {displayTitle}
+                                  </td>
+
+                                  {/* 3. Status */}
+                                  <td className="p-3">
+                                    {log.hasSubmitted ? (
+                                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border inline-flex items-center gap-1" style={{ backgroundColor: "var(--status-working-bg)", borderColor: "var(--status-working-border)", color: "var(--status-working-text)" }}>
+                                        <CheckCircle2 className="w-3 h-3" /> Submitted
+                                      </span>
+                                    ) : (
+                                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border inline-flex items-center gap-1" style={{ backgroundColor: "var(--status-ooo-bg)", borderColor: "var(--status-ooo-border)", color: "var(--status-ooo-text)" }}>
+                                        <X className="w-3 h-3" /> Missed
+                                      </span>
+                                    )}
+                                  </td>
+
+                                  {/* 4. Admin Remark */}
+                                  <td className="p-3 max-w-xs truncate font-mono text-[11px]">
+                                    {log.adminRemark ? (
+                                      <span className="text-indigo-400 font-semibold flex items-center gap-1">
+                                        <MessageSquare className="w-3 h-3 shrink-0 text-indigo-400" />
+                                        &ldquo;{log.adminRemark}&rdquo;
+                                      </span>
+                                    ) : (
+                                      <span className="opacity-40 italic">No remark</span>
+                                    )}
+                                  </td>
+
+                                  {/* 5. Action */}
+                                  <td className="p-3 text-right">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenWorkLog(log.date)}
+                                      className="px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:brightness-120 inline-flex items-center gap-1.5 shadow-xs"
+                                      style={{
+                                        backgroundColor: isToday ? "var(--accent-primary)" : "var(--bg-surface-elevated)",
+                                        borderColor: "var(--border-medium)",
+                                        color: isToday ? "var(--accent-text)" : "var(--text-primary)",
+                                      }}
+                                    >
+                                      {isToday ? <Edit3 className="w-3.5 h-3.5" /> : <FileText className="w-3.5 h-3.5" />}
+                                      <span>{isToday ? "Edit Today's Log" : "View Log / Remarks"}</span>
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Quick Instructions Footer */}
                   <div
                     className="p-4 rounded-xl border text-xs leading-relaxed space-y-1.5"
                     style={{
@@ -940,12 +1105,11 @@ export default function Home() {
                       color: "var(--text-secondary)",
                     }}
                   >
-                    <span className="font-bold text-xs block text-primary">💡 Work Log Instructions:</span>
+                    <span className="font-bold text-xs block text-primary">💡 Work Log Rules:</span>
                     <ul className="list-disc pl-4 space-y-1 text-[11px] text-muted">
                       <li>You can write and edit your work log anytime for <strong>Today&apos;s Date</strong>.</li>
-                      <li>Past dates are locked to prevent retroactive modification (Admins can override when necessary).</li>
-                      <li>Use checklists (`[ ]`), bullet lists, bold text, and headings to structure your deliverables cleanly.</li>
-                      <li>Your supervisor / admin can review your daily log and leave feedback remarks.</li>
+                      <li>Past dates are read-only for employees to ensure shift audit compliance (Admins can edit any date).</li>
+                      <li>TipTap editor features line numbers, checklist formatting (`[ ]`), bold, headings, and bullet points.</li>
                     </ul>
                   </div>
                 </section>
@@ -968,7 +1132,10 @@ export default function Home() {
       {/* Work Log Modal */}
       <WorkLogModal
         isOpen={isWorkLogModalOpen}
-        onClose={() => setIsWorkLogModalOpen(false)}
+        onClose={() => {
+          setIsWorkLogModalOpen(false);
+          if (user) fetchUserWorkLogs(user.id || user._id);
+        }}
         userId={workLogUserId || (user ? (user.id || user._id || "") : "")}
         userName={workLogUserName || (user ? user.name : "User")}
         date={workLogDate}

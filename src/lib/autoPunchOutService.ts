@@ -2,14 +2,23 @@ import { Attendance } from "../models/Attendance";
 import { User } from "../models/User";
 import { formatDateKey } from "./calendarService";
 
+let lastAutoPunchOutCheck = 0;
+const AUTO_PUNCH_OUT_INTERVAL_MS = 30000; // 30 seconds
+
 /**
  * Scans for any open attendance records from previous dates (date < todayStr)
  * where the user forgot to punch out before midnight, and automatically closes them
  * at 11:59:59 PM of that day.
  */
-export async function processAutoPunchOut(): Promise<{ processedCount: number; records: any[] }> {
+export async function processAutoPunchOut(force = false): Promise<{ processedCount: number; records: any[] }> {
   try {
     const now = new Date();
+    const nowMs = now.getTime();
+    if (!force && nowMs - lastAutoPunchOutCheck < AUTO_PUNCH_OUT_INTERVAL_MS) {
+      return { processedCount: 0, records: [] };
+    }
+    lastAutoPunchOutCheck = nowMs;
+
     const todayStr = formatDateKey(now);
 
     // Find records from dates strictly prior to today that are still marked as "working" or have no logout

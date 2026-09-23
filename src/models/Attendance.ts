@@ -107,6 +107,9 @@ const AttendanceSchema: Schema = new Schema(
   }
 );
 
+AttendanceSchema.index({ userId: 1, date: 1 }, { unique: true });
+AttendanceSchema.index({ date: 1, status: 1 });
+
 if (mongoose.models.Attendance) {
   delete mongoose.models.Attendance;
 }

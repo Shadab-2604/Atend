@@ -125,6 +125,8 @@ const UserSchema: Schema = new Schema(
   }
 );
 
+UserSchema.index({ role: 1, currentStatus: 1 });
+
 if (mongoose.models.User) {
   delete mongoose.models.User;
 }

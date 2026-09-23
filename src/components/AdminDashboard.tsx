@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { AdminMetrics, User, RegularizationRequest } from "@/types";
 import {
   Users,
@@ -288,7 +288,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setIsEditModalOpen(true);
   };
 
-  const totalAdmins = users.filter((u) => u.role === "admin").length;
+  const totalAdmins = useMemo(() => users.filter((u) => u.role === "admin").length, [users]);
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -366,33 +366,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  // Filter users for Manage Users tab
-  const managedUsersList = users.filter((u) => {
-    const q = manageSearchQuery.toLowerCase();
-    const matchesSearch =
-      (u.name || "").toLowerCase().includes(q) ||
-      (u.username || "").toLowerCase().includes(q) ||
-      (u.email || "").toLowerCase().includes(q);
+  // Filter users for Manage Users tab (Memoized)
+  const managedUsersList = useMemo(() => {
+    return users.filter((u) => {
+      const q = manageSearchQuery.toLowerCase();
+      const matchesSearch =
+        (u.name || "").toLowerCase().includes(q) ||
+        (u.username || "").toLowerCase().includes(q) ||
+        (u.email || "").toLowerCase().includes(q);
 
-    if (!matchesSearch) return false;
-    if (manageRoleFilter === "all") return true;
-    if (manageRoleFilter === "intern") return u.role === "intern";
-    if (manageRoleFilter === "admin") return u.role === "admin";
-    if (manageRoleFilter === "other") return u.role !== "intern" && u.role !== "admin";
-    return u.role === manageRoleFilter;
-  });
+      if (!matchesSearch) return false;
+      if (manageRoleFilter === "all") return true;
+      if (manageRoleFilter === "intern") return u.role === "intern";
+      if (manageRoleFilter === "admin") return u.role === "admin";
+      if (manageRoleFilter === "other") return u.role !== "intern" && u.role !== "admin";
+      return u.role === manageRoleFilter;
+    });
+  }, [users, manageSearchQuery, manageRoleFilter]);
 
-  // Filter users
-  const filteredUsers = users.filter((u) => {
-    const matchesSearch =
-      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.username.toLowerCase().includes(searchQuery.toLowerCase());
+  // Filter users (Memoized)
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      const matchesSearch =
+        u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.username.toLowerCase().includes(searchQuery.toLowerCase());
 
-    if (!matchesSearch) return false;
-
-    if (statusFilter === "all") return true;
-    return u.currentStatus === statusFilter;
-  });
+      if (!matchesSearch) return false;
+      if (statusFilter === "all") return true;
+      return u.currentStatus === statusFilter;
+    });
+  }, [users, searchQuery, statusFilter]);
 
   const [ticker, setTicker] = useState(0);
   useEffect(() => {
@@ -410,21 +413,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
-  const pendingRequestsCount = regularizationRequests.filter(
-    (r) => r.status === "pending"
-  ).length;
+  const pendingRequestsCount = useMemo(
+    () => regularizationRequests.filter((r) => r.status === "pending").length,
+    [regularizationRequests]
+  );
 
-  const filteredRequests = regularizationRequests.filter((r) => {
-    const q = regSearch.toLowerCase();
-    const matchesSearch =
-      r.userName.toLowerCase().includes(q) ||
-      r.date.includes(q) ||
-      (r.reason && r.reason.toLowerCase().includes(q));
+  const filteredRequests = useMemo(() => {
+    return regularizationRequests.filter((r) => {
+      const q = regSearch.toLowerCase();
+      const matchesSearch =
+        r.userName.toLowerCase().includes(q) ||
+        r.date.includes(q) ||
+        (r.reason && r.reason.toLowerCase().includes(q));
 
-    if (!matchesSearch) return false;
-    if (regFilter === "all") return true;
-    return r.status === regFilter;
-  });
+      if (!matchesSearch) return false;
+      if (regFilter === "all") return true;
+      return r.status === regFilter;
+    });
+  }, [regularizationRequests, regSearch, regFilter]);
 
   const handleApprove = async (requestId: string) => {
     if (!onReviewRegularization) return;
@@ -2158,12 +2164,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b text-[10px] font-bold uppercase tracking-wider" style={{ backgroundColor: "var(--bg-surface-elevated)", borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>
-                    <th className="p-3">Member Name</th>
-                    <th className="p-3">Role</th>
-                    <th className="p-3">Submission Status</th>
-                    <th className="p-3">Work Log Snippet</th>
-                    <th className="p-3">Admin Remark</th>
-                    <th className="p-3 text-right">Action</th>
+                    <th className="p-3">Name</th>
+                    <th className="p-3">Date</th>
+                    <th className="p-3">Worklog Title</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3 text-center">Remark Button</th>
+                    <th className="p-3 text-right">Edit Button</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
@@ -2177,57 +2183,89 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       }
                       return true;
                     })
-                    .map((item: any) => (
-                      <tr key={item.userId} className="hover:bg-white/5 transition-colors">
-                        <td className="p-3 font-bold" style={{ color: "var(--text-primary)" }}>
-                          {item.userName}
-                          <span className="block text-[10px] font-mono font-normal" style={{ color: "var(--text-muted)" }}>
-                            @{item.userUsername}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border" style={{ backgroundColor: "var(--bg-surface-elevated)", borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>
-                            {item.userRole}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          {item.hasSubmitted ? (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border inline-flex items-center gap-1" style={{ backgroundColor: "var(--status-working-bg)", borderColor: "var(--status-working-border)", color: "var(--status-working-text)" }}>
-                              <CheckCircle className="w-3 h-3" /> Submitted
+                    .map((item: any) => {
+                      const displayDate = workLogAuditDate || item.date || new Date().toISOString().split("T")[0];
+                      const displayTitle = item.workLogTitle || item.title || (item.hasSubmitted ? "Daily Work Log" : "No Work Log Submitted");
+
+                      return (
+                        <tr key={item.userId} className="hover:bg-white/5 transition-colors">
+                          {/* 1. Name */}
+                          <td className="p-3 font-bold" style={{ color: "var(--text-primary)" }}>
+                            {item.userName}
+                            <span className="block text-[10px] font-mono font-normal" style={{ color: "var(--text-muted)" }}>
+                              @{item.userUsername} ({item.userRole})
                             </span>
-                          ) : (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border inline-flex items-center gap-1" style={{ backgroundColor: "var(--status-ooo-bg)", borderColor: "var(--status-ooo-border)", color: "var(--status-ooo-text)" }}>
-                              <X className="w-3 h-3" /> Missed
-                            </span>
-                          )}
-                        </td>
-                        <td className="p-3 max-w-xs truncate" style={{ color: "var(--text-secondary)" }}>
-                          {item.hasSubmitted ? item.contentSnippet || "(Formatted Rich Text)" : <span className="italic opacity-50">No log submitted for date</span>}
-                        </td>
-                        <td className="p-3 max-w-xs truncate font-mono text-[11px]">
-                          {item.adminRemark ? (
-                            <span className="text-indigo-400 font-semibold">&ldquo;{item.adminRemark}&rdquo;</span>
-                          ) : (
-                            <span className="opacity-40 italic">No remark</span>
-                          )}
-                        </td>
-                        <td className="p-3 text-right">
-                          <button
-                            type="button"
-                            onClick={() => onOpenWorkLogForUserAndDate?.(item.userId, item.userName, workLogAuditDate || item.date)}
-                            className="px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:brightness-120 inline-flex items-center gap-1.5 shadow-xs"
-                            style={{
-                              backgroundColor: "var(--bg-surface-elevated)",
-                              borderColor: "var(--border-medium)",
-                              color: "var(--text-primary)",
-                            }}
-                          >
-                            <FileText className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>{item.hasSubmitted ? "Inspect Log / Remark" : "Write Log / Override"}</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+
+                          {/* 2. Date */}
+                          <td className="p-3 font-mono text-[11px] font-semibold" style={{ color: "var(--text-secondary)" }}>
+                            {displayDate}
+                          </td>
+
+                          {/* 3. Worklog Title */}
+                          <td className="p-3 max-w-xs truncate font-medium" style={{ color: item.hasSubmitted ? "var(--text-primary)" : "var(--text-muted)" }}>
+                            {displayTitle}
+                          </td>
+
+                          {/* 4. Status */}
+                          <td className="p-3">
+                            {item.hasSubmitted ? (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border inline-flex items-center gap-1" style={{ backgroundColor: "var(--status-working-bg)", borderColor: "var(--status-working-border)", color: "var(--status-working-text)" }}>
+                                <CheckCircle className="w-3 h-3" /> Submitted
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border inline-flex items-center gap-1" style={{ backgroundColor: "var(--status-ooo-bg)", borderColor: "var(--status-ooo-border)", color: "var(--status-ooo-text)" }}>
+                                <X className="w-3 h-3" /> Missed
+                              </span>
+                            )}
+                          </td>
+
+                          {/* 5. Remark Button */}
+                          <td className="p-3 text-center">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setRemarkModalData({
+                                  isOpen: true,
+                                  userId: item.userId,
+                                  userName: item.userName,
+                                  date: displayDate,
+                                  currentRemark: item.adminRemark || "",
+                                  workLogContent: item.content || "",
+                                })
+                              }
+                              className="px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:brightness-120 inline-flex items-center gap-1.5 shadow-xs"
+                              style={{
+                                backgroundColor: "var(--bg-surface-elevated)",
+                                borderColor: "var(--border-medium)",
+                                color: item.adminRemark ? "#818cf8" : "var(--text-secondary)",
+                              }}
+                              title={item.adminRemark ? `Remark: "${item.adminRemark}"` : "Add admin remark"}
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              <span>{item.adminRemark ? "Edit Remark" : "Remark"}</span>
+                            </button>
+                          </td>
+
+                          {/* 6. Edit Button */}
+                          <td className="p-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => onOpenWorkLogForUserAndDate?.(item.userId, item.userName, displayDate)}
+                              className="px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:brightness-120 inline-flex items-center gap-1.5 shadow-xs"
+                              style={{
+                                backgroundColor: "var(--accent-primary)",
+                                borderColor: "var(--border-medium)",
+                                color: "var(--accent-text)",
+                              }}
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span>Edit Log</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
@@ -3072,6 +3110,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         }}
         request={selectedRequestForReject}
         onConfirmReject={handleConfirmReject}
+      />
+
+      {/* Admin Remark Modal */}
+      <AdminRemarkModal
+        isOpen={remarkModalData.isOpen}
+        onClose={() => setRemarkModalData((prev) => ({ ...prev, isOpen: false }))}
+        userId={remarkModalData.userId}
+        userName={remarkModalData.userName}
+        date={remarkModalData.date}
+        currentRemark={remarkModalData.currentRemark}
+        workLogContent={remarkModalData.workLogContent}
+        onSaved={() => fetchWorkLogAudit(remarkModalData.date)}
       />
     </div>
   );

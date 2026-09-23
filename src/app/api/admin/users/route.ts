@@ -13,7 +13,7 @@ export async function GET(req: Request) {
     const roleFilter = searchParams.get("role");
 
     const filter = roleFilter && roleFilter !== "all" ? { role: roleFilter } : {};
-    const users = await User.find(filter).select("-password").sort({ createdAt: -1 });
+    const users = await User.find(filter).select("-password").sort({ createdAt: -1 }).lean();
 
     return NextResponse.json({ success: true, users });
   } catch (err) {

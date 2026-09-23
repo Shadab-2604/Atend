@@ -19,10 +19,10 @@ export async function GET(req: Request) {
     const targetDate = searchParams.get("date") || getTodayIsoString();
 
     // Fetch all active users (interns/employees/users excluding admins if desired, or all users)
-    const users = await User.find({ role: { $ne: "admin" } }).sort({ name: 1 });
+    const users = await User.find({ role: { $ne: "admin" } }).select("name username role email").sort({ name: 1 }).lean();
 
     // Fetch all work logs for the specified date
-    const workLogs = await WorkLog.find({ date: targetDate });
+    const workLogs = await WorkLog.find({ date: targetDate }).lean();
     const logMap = new Map<string, any>();
     workLogs.forEach((log) => {
       logMap.set(String(log.userId), log);

@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     }
 
     await processAutoPunchOut();
-    const records = await Attendance.find({ userId }).sort({ date: 1 });
+    const records = await Attendance.find({ userId }).sort({ date: 1 }).lean();
     return NextResponse.json({ success: true, records });
   } catch (err) {
     return NextResponse.json({ error: "Failed to fetch attendance records." }, { status: 500 });

@@ -23,7 +23,7 @@ export async function GET(req: Request) {
     };
 
     const { workingDaysMap } = generateWorkingDays(settings.startDate, settings.totalWorkingDays);
-    const presentRecords = await Attendance.find({ userId, status: { $in: ["present", "half-day"] } });
+    const presentRecords = await Attendance.find({ userId, status: { $in: ["present", "half-day"] } }).select("status duration.totalMinutes").lean();
 
     const completedDays = presentRecords.reduce((acc, r) => acc + (r.status === "half-day" ? 0.5 : 1), 0);
     const remainingDays = Math.max(0, settings.totalWorkingDays - Math.floor(completedDays));
