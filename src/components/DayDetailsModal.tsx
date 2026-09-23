@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   X,
   FileCheck,
+  FileText,
   Building2,
   AlertTriangle,
   Timer,
@@ -27,6 +28,7 @@ interface DayDetailsModalProps {
   isSunday?: boolean;
   isSaturday?: boolean;
   onOpenRegularize?: (date: string) => void;
+  onOpenWorkLog?: (date: string) => void;
   onAdminOverrideStatus?: (date: string, status: AttendanceStatus) => Promise<void>;
   isAdmin?: boolean;
 }
@@ -41,6 +43,7 @@ export const DayDetailsModal: React.FC<DayDetailsModalProps> = ({
   isSunday = false,
   isSaturday = false,
   onOpenRegularize,
+  onOpenWorkLog,
   onAdminOverrideStatus,
   isAdmin = false,
 }) => {
@@ -558,6 +561,25 @@ export const DayDetailsModal: React.FC<DayDetailsModalProps> = ({
         )}
 
         <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
+          {onOpenWorkLog && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenWorkLog(date);
+              }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all hover:brightness-110 shadow-sm"
+              style={{
+                backgroundColor: "var(--bg-surface-elevated)",
+                borderColor: "var(--border-medium)",
+                color: "var(--text-primary)",
+              }}
+            >
+              <FileText className="w-4 h-4 text-emerald-400" />
+              <span>View / Edit Work Log</span>
+            </button>
+          )}
+
           {canRegularize && onOpenRegularize && (
             <button
               type="button"

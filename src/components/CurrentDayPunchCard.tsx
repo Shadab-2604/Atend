@@ -15,6 +15,7 @@ import {
   Coffee,
   Sparkles,
   ArrowRight,
+  FileText,
 } from "lucide-react";
 
 interface CurrentDayPunchCardProps {
@@ -24,6 +25,7 @@ interface CurrentDayPunchCardProps {
   isWorkingDay: boolean;
   onUpdateStatus: (newStatus: PresenceStatus) => void;
   onOpenRegularizeModal?: () => void;
+  onOpenWorkLogModal?: () => void;
   loading?: boolean;
 }
 
@@ -34,6 +36,7 @@ export const CurrentDayPunchCard: React.FC<CurrentDayPunchCardProps> = ({
   isWorkingDay,
   onUpdateStatus,
   onOpenRegularizeModal,
+  onOpenWorkLogModal,
   loading = false,
 }) => {
   const [sessionWorkSec, setSessionWorkSec] = useState(0);
@@ -595,21 +598,38 @@ export const CurrentDayPunchCard: React.FC<CurrentDayPunchCardProps> = ({
             </span>
           </div>
 
-          {onOpenRegularizeModal && (
-            <button
-              type="button"
-              onClick={onOpenRegularizeModal}
-              className="px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:brightness-110 flex items-center gap-1.5"
-              style={{
-                backgroundColor: "var(--bg-surface-elevated)",
-                borderColor: "var(--border-medium)",
-                color: "var(--text-primary)",
-              }}
-            >
-              <span>Regularize Day</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {onOpenWorkLogModal && (
+              <button
+                type="button"
+                onClick={onOpenWorkLogModal}
+                className="px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:brightness-110 flex items-center gap-1.5 shadow-sm"
+                style={{
+                  backgroundColor: "var(--accent-primary)",
+                  color: "var(--accent-text)",
+                }}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Today&apos;s Worklog</span>
+              </button>
+            )}
+
+            {onOpenRegularizeModal && (
+              <button
+                type="button"
+                onClick={onOpenRegularizeModal}
+                className="px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:brightness-110 flex items-center gap-1.5"
+                style={{
+                  backgroundColor: "var(--bg-surface-elevated)",
+                  borderColor: "var(--border-medium)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                <span>Regularize Day</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       </section>
     </div>

@@ -97,3 +97,16 @@ export interface AdminMetrics {
   ooo: number;
   loggedOut: number;
 }
+
+export interface WorkLog {
+  _id?: string;
+  userId: string;
+  date: string;
+  title?: string;
+  content: string;
+  adminRemark?: string;
+  updatedBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+

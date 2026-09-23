@@ -36,8 +36,9 @@ import { CurrentDayPunchCard } from "@/components/CurrentDayPunchCard";
 import { CalendarView } from "@/components/CalendarView";
 import { StatsGrid } from "@/components/StatsGrid";
 import { RegularizeModal } from "@/components/RegularizeModal";
+import { WorkLogModal } from "@/components/WorkLogModal";
 import { AdminDashboard } from "@/components/AdminDashboard";
-import { CheckCircle2, AlertTriangle, X, Bell } from "lucide-react";
+import { CheckCircle2, AlertTriangle, X, Bell, Calendar, Edit3, FileText } from "lucide-react";
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
@@ -90,6 +91,29 @@ export default function Home() {
   // Regularization Modal
   const [isRegularizeModalOpen, setIsRegularizeModalOpen] = useState(false);
   const [regularizeDefaultDate, setRegularizeDefaultDate] = useState<string | undefined>(undefined);
+
+  // Work Log Modal
+  const [isWorkLogModalOpen, setIsWorkLogModalOpen] = useState(false);
+  const [workLogDate, setWorkLogDate] = useState<string>("");
+  const [workLogUserId, setWorkLogUserId] = useState<string>("");
+  const [workLogUserName, setWorkLogUserName] = useState<string>("");
+
+  const handleOpenWorkLog = (targetDate?: string, targetUserId?: string, targetUserName?: string) => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    const todayIso = `${y}-${m}-${d}`;
+
+    const effectiveDate = targetDate || todayIso;
+    const effectiveUserId = targetUserId || user?.id || user?._id || "";
+    const effectiveUserName = targetUserName || user?.name || "User";
+
+    setWorkLogDate(effectiveDate);
+    setWorkLogUserId(effectiveUserId);
+    setWorkLogUserName(effectiveUserName);
+    setIsWorkLogModalOpen(true);
+  };
 
   // Real-time toast notifications
   const [toast, setToast] = useState<{
@@ -646,6 +670,7 @@ export default function Home() {
             currentAdminId={user?.id || user?._id}
             regularizationRequests={adminRegRequests}
             onReviewRegularization={handleAdminReviewRegularization}
+            onOpenWorkLogForUserAndDate={(uId, uName, d) => handleOpenWorkLog(d, uId, uName)}
             loading={adminLoading}
             workingDaysMap={workingDaysMap}
           />
@@ -673,13 +698,14 @@ export default function Home() {
                     setRegularizeDefaultDate(absentDates[0]);
                     setIsRegularizeModalOpen(true);
                   }}
+                  onOpenWorkLogModal={() => handleOpenWorkLog()}
                   loading={presenceLoading}
                 />
 
                 {/* Summary Progress Cards */}
                 <StatsGrid stats={summaryStats} totalDays={45} />
               </div>
-            ) : (
+            ) : employeeViewMode === "history" ? (
               /* OPTION 2: ATTENDANCE HISTORY & CALENDAR WITH MONTH/YEAR SEARCH FILTERS */
               <div className="space-y-6 animate-fade-in w-full min-w-0 max-w-full overflow-hidden">
                 {/* 45-Day Internship Attendance Calendar with month & year filter */}
@@ -690,6 +716,7 @@ export default function Home() {
                     setRegularizeDefaultDate(date);
                     setIsRegularizeModalOpen(true);
                   }}
+                  onOpenWorkLogForDate={(date) => handleOpenWorkLog(date)}
                 />
 
                 {/* Employee's Regularization Requests History & Admin Feedback */}
@@ -824,6 +851,105 @@ export default function Home() {
                 {/* Summary Progress Cards */}
                 <StatsGrid stats={summaryStats} totalDays={45} />
               </div>
+            ) : (
+              /* OPTION 3: DEDICATED WORK LOG DASHBOARD SECTION */
+              <div className="space-y-6 animate-fade-in w-full min-w-0 max-w-full">
+                <section
+                  className="rounded-2xl p-5 sm:p-7 border shadow-xl transition-all space-y-6"
+                  style={{
+                    backgroundColor: "var(--bg-surface)",
+                    borderColor: "var(--border-subtle)",
+                  }}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b" style={{ borderColor: "var(--border-subtle)" }}>
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-black flex items-center gap-2.5" style={{ color: "var(--text-primary)" }}>
+                        <FileText className="w-5 h-5 text-emerald-400" />
+                        My Daily Work Logs & Activity
+                      </h2>
+                      <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                        Log your daily shift tasks with TipTap rich text, checklists, line numbers, and view supervisor remarks.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleOpenWorkLog()}
+                      className="px-5 py-2.5 rounded-xl text-xs font-bold border flex items-center gap-2 transition-all shadow-md hover:brightness-110"
+                      style={{
+                        backgroundColor: "var(--accent-primary)",
+                        borderColor: "var(--border-medium)",
+                        color: "var(--accent-text)",
+                        boxShadow: "0 4px 14px var(--accent-glow)",
+                      }}
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span>Write / Edit Today&apos;s Work Log</span>
+                    </button>
+                  </div>
+
+                  {/* Today Status Banner */}
+                  <div
+                    className="p-4 rounded-2xl border flex flex-wrap items-center justify-between gap-3 text-xs"
+                    style={{
+                      backgroundColor: "var(--bg-surface-elevated)",
+                      borderColor: "var(--border-medium)",
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center border shrink-0"
+                        style={{
+                          backgroundColor: "var(--bg-surface-subtle)",
+                          borderColor: "var(--border-subtle)",
+                        }}
+                      >
+                        <Calendar className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider block" style={{ color: "var(--text-muted)" }}>
+                          Today&apos;s Status ({new Date().toISOString().split("T")[0]})
+                        </span>
+                        <h4 className="text-sm font-bold mt-0.5" style={{ color: "var(--text-primary)" }}>
+                          Today&apos;s Work Log Editor & Live Preview
+                        </h4>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleOpenWorkLog()}
+                      className="px-4 py-2 rounded-xl text-xs font-bold border transition-all hover:brightness-110 flex items-center gap-1.5"
+                      style={{
+                        backgroundColor: "var(--bg-surface-subtle)",
+                        borderColor: "var(--border-medium)",
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Open TipTap Split Work Log Editor</span>
+                    </button>
+                  </div>
+
+                  {/* Quick Guide & Rules Info */}
+                  <div
+                    className="p-4 rounded-xl border text-xs leading-relaxed space-y-1.5"
+                    style={{
+                      backgroundColor: "var(--bg-surface-subtle)",
+                      borderColor: "var(--border-subtle)",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    <span className="font-bold text-xs block text-primary">💡 Work Log Instructions:</span>
+                    <ul className="list-disc pl-4 space-y-1 text-[11px] text-muted">
+                      <li>You can write and edit your work log anytime for <strong>Today&apos;s Date</strong>.</li>
+                      <li>Past dates are locked to prevent retroactive modification (Admins can override when necessary).</li>
+                      <li>Use checklists (`[ ]`), bullet lists, bold text, and headings to structure your deliverables cleanly.</li>
+                      <li>Your supervisor / admin can review your daily log and leave feedback remarks.</li>
+                    </ul>
+                  </div>
+                </section>
+              </div>
             )}
           </>
         )}
@@ -837,6 +963,17 @@ export default function Home() {
         userId={user.id || user._id || ""}
         defaultDate={regularizeDefaultDate}
         absentDates={absentDates}
+      />
+
+      {/* Work Log Modal */}
+      <WorkLogModal
+        isOpen={isWorkLogModalOpen}
+        onClose={() => setIsWorkLogModalOpen(false)}
+        userId={workLogUserId || (user ? (user.id || user._id || "") : "")}
+        userName={workLogUserName || (user ? user.name : "User")}
+        date={workLogDate}
+        currentUserRole={role}
+        currentUserId={user ? (user.id || user._id) : undefined}
       />
     </div>
   );

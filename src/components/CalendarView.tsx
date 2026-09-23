@@ -22,6 +22,7 @@ interface CalendarViewProps {
   attendanceRecords: AttendanceRecord[];
   workingDaysMap: Record<string, number>;
   onOpenRegularizeForDate?: (date: string) => void;
+  onOpenWorkLogForDate?: (date: string) => void;
   onAdminOverrideStatus?: (date: string, status: AttendanceStatus) => Promise<void>;
   isAdmin?: boolean;
 }
@@ -62,6 +63,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   attendanceRecords,
   workingDaysMap,
   onOpenRegularizeForDate,
+  onOpenWorkLogForDate,
   onAdminOverrideStatus,
   isAdmin = false,
 }) => {
@@ -951,6 +953,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           isSunday={new Date(`${selectedDateForDetails}T12:00:00`).getDay() === 0}
           isSaturday={new Date(`${selectedDateForDetails}T12:00:00`).getDay() === 6}
           onOpenRegularize={onOpenRegularizeForDate}
+          onOpenWorkLog={onOpenWorkLogForDate}
           onAdminOverrideStatus={onAdminOverrideStatus}
           isAdmin={isAdmin}
         />

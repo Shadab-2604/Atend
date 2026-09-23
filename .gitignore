@@ -2,6 +2,7 @@
 /node_modules
 /.pnpm
 /.yarn
+/STITCH
 
 # Next.js build output
 /.next/

@@ -255,3 +255,79 @@ body {
   opacity: 0.95;
   filter: brightness(1.05);
 }
+
+/* -------------------------------------------------------------
+   WorkLog TipTap & Preview Styles
+---------------------------------------------------------------- */
+.worklog-tiptap-container .ProseMirror {
+  outline: none;
+  min-height: 250px;
+}
+
+.worklog-tiptap-container .ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--text-muted);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.worklog-tiptap-container .ProseMirror h1,
+.worklog-preview-content h1 {
+  font-size: 1.35rem;
+  font-weight: 900;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.worklog-tiptap-container .ProseMirror h2,
+.worklog-preview-content h2 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.worklog-tiptap-container .ProseMirror h3,
+.worklog-preview-content h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+  color: var(--text-primary);
+}
+
+.worklog-tiptap-container .ProseMirror ul,
+.worklog-preview-content ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.worklog-tiptap-container .ProseMirror ul[data-type="taskList"],
+.worklog-preview-content ul[data-type="taskList"] {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.worklog-tiptap-container .ProseMirror ul[data-type="taskList"] li,
+.worklog-preview-content ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.worklog-tiptap-container .ProseMirror ul[data-type="taskList"] li input[type="checkbox"],
+.worklog-preview-content ul[data-type="taskList"] li input[type="checkbox"] {
+  margin-top: 0.25rem;
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  accent-color: var(--status-working-text);
+}
+

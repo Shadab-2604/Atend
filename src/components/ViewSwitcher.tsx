@@ -1,15 +1,16 @@
 "use client";
 
 import React from "react";
-import { Clock, Calendar } from "lucide-react";
+import { Clock, Calendar, FileText } from "lucide-react";
 
-export type EmployeeViewMode = "current" | "history";
+export type EmployeeViewMode = "current" | "history" | "worklog";
 
 interface ViewSwitcherProps {
   currentMode: EmployeeViewMode;
   onModeChange: (mode: EmployeeViewMode) => void;
   absentCount?: number;
   todayStatus?: string;
+  hasSubmittedWorkLogToday?: boolean;
 }
 
 export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
@@ -17,10 +18,11 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
   onModeChange,
   absentCount = 0,
   todayStatus = "logged_out",
+  hasSubmittedWorkLogToday = false,
 }) => {
   return (
     <div className="w-full flex flex-wrap items-center justify-between gap-3 mb-6">
-      {/* 2-Option Navigation Bar */}
+      {/* 3-Option Navigation Bar */}
       <div
         className="w-full sm:w-auto flex items-center gap-1.5 p-1.5 rounded-2xl border shadow-sm backdrop-blur-md overflow-x-auto"
         style={{
@@ -32,7 +34,7 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
         <button
           type="button"
           onClick={() => onModeChange("current")}
-          className={`flex-1 sm:flex-initial justify-center px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
+          className={`flex-1 sm:flex-initial justify-center px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
             currentMode === "current"
               ? "shadow-sm"
               : "opacity-75 hover:opacity-100 hover:brightness-110"
@@ -62,7 +64,7 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
         <button
           type="button"
           onClick={() => onModeChange("history")}
-          className={`flex-1 sm:flex-initial justify-center px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
+          className={`flex-1 sm:flex-initial justify-center px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
             currentMode === "history"
               ? "shadow-sm"
               : "opacity-75 hover:opacity-100 hover:brightness-110"
@@ -100,6 +102,49 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
             </span>
           )}
         </button>
+
+        {/* Option 3: Daily Work Logs */}
+        <button
+          type="button"
+          onClick={() => onModeChange("worklog")}
+          className={`flex-1 sm:flex-initial justify-center px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all whitespace-nowrap ${
+            currentMode === "worklog"
+              ? "shadow-sm"
+              : "opacity-75 hover:opacity-100 hover:brightness-110"
+          }`}
+          style={{
+            backgroundColor:
+              currentMode === "worklog" ? "var(--bg-surface-elevated)" : "transparent",
+            color: "var(--text-primary)",
+            border: currentMode === "worklog" ? "1px solid var(--border-medium)" : "1px solid transparent",
+          }}
+        >
+          <FileText className="w-4 h-4 shrink-0 text-emerald-400" />
+          <span>Daily Work Logs</span>
+          {hasSubmittedWorkLogToday ? (
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full border"
+              style={{
+                backgroundColor: "var(--status-working-bg)",
+                borderColor: "var(--status-working-border)",
+                color: "var(--status-working-text)",
+              }}
+            >
+              Submitted
+            </span>
+          ) : (
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full border"
+              style={{
+                backgroundColor: "var(--status-break-bg)",
+                borderColor: "var(--status-break-border)",
+                color: "var(--status-break-text)",
+              }}
+            >
+              Pending
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Mode Sub-indicator */}
@@ -108,7 +153,9 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
         <span>
           {currentMode === "current"
             ? "Showing daily shift clock, timers & punch status"
-            : "Showing past attendance records, status overview & calendar"}
+            : currentMode === "history"
+            ? "Showing past attendance records, status overview & calendar"
+            : "Showing today's work log, TipTap editor & supervisor remarks"}
         </span>
       </div>
     </div>

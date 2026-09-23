@@ -35,24 +35,26 @@ export const RegularizeModal: React.FC<RegularizeModalProps> = ({
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    if (defaultDate) {
-      setDate(defaultDate);
-    } else if (absentDates.length > 0) {
-      setDate(absentDates[0]);
-    } else {
-      // Default to yesterday
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const y = yesterday.getFullYear();
-      const m = String(yesterday.getMonth() + 1).padStart(2, "0");
-      const d = String(yesterday.getDate()).padStart(2, "0");
-      setDate(`${y}-${m}-${d}`);
+    if (isOpen) {
+      if (defaultDate) {
+        setDate(defaultDate);
+      } else if (absentDates.length > 0) {
+        setDate(absentDates[0]);
+      } else {
+        // Default to yesterday
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const y = yesterday.getFullYear();
+        const m = String(yesterday.getMonth() + 1).padStart(2, "0");
+        const d = String(yesterday.getDate()).padStart(2, "0");
+        setDate(`${y}-${m}-${d}`);
+      }
+      setWorkMode("WFO");
+      setHours(8);
+      setReason("");
+      setError("");
     }
-    setWorkMode("WFO");
-    setHours(8);
-    setReason("");
-    setError("");
-  }, [isOpen, defaultDate, absentDates]);
+  }, [isOpen, defaultDate]);
 
   if (!isOpen) return null;
 

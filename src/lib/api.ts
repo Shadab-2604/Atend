@@ -162,3 +162,39 @@ export async function apiAdminReviewRegularization(
     }
   );
 }
+
+// Work Log APIs
+export async function apiGetWorkLog(userId: string, date: string) {
+  return apiRequest<{ success: boolean; workLog: any }>(`/worklog?userId=${userId}&date=${date}`);
+}
+
+export async function apiSaveWorkLog(data: {
+  userId: string;
+  date: string;
+  content: string;
+  adminRemark?: string;
+  requesterRole?: string;
+  requesterId?: string;
+}) {
+  return apiRequest<{ success: boolean; message: string; workLog: any }>("/worklog", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+}
+
+export async function apiAdminGetDailyWorkLogs(date?: string) {
+  const query = date ? `?date=${date}` : "";
+  return apiRequest<{
+    success: boolean;
+    date: string;
+    metrics: { totalUsers: number; submittedCount: number; missedCount: number; reviewedCount: number };
+    items: any[];
+  }>(`/admin/worklogs${query}`);
+}
+
+export async function apiGetUserWorkLogs(userId: string) {
+  return apiRequest<{ success: boolean; workLogs: any[] }>(`/user/worklogs?userId=${userId}`);
+}
+
+
+

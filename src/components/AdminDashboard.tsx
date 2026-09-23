@@ -26,11 +26,15 @@ import {
   Shield,
   Eye,
   EyeOff,
+  FileText,
+  MessageSquare,
+  Edit3,
 } from "lucide-react";
 import { RejectionReasonModal } from "./RejectionReasonModal";
+import { AdminRemarkModal } from "./AdminRemarkModal";
 import { CalendarView } from "./CalendarView";
 import { formatTo12Hour } from "@/lib/formatters";
-import { apiAdminGetAllAttendance, apiAdminOverrideAttendance, apiGetAttendance } from "@/lib/api";
+import { apiAdminGetAllAttendance, apiAdminOverrideAttendance, apiGetAttendance, apiAdminGetDailyWorkLogs } from "@/lib/api";
 import { Calendar as CalendarIcon } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -47,6 +51,7 @@ interface AdminDashboardProps {
     action: "approve" | "reject",
     adminReason?: string
   ) => Promise<void>;
+  onOpenWorkLogForUserAndDate?: (userId: string, userName: string, date: string) => void;
   loading?: boolean;
   workingDaysMap?: Record<string, number>;
 }
@@ -61,10 +66,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   currentAdminId,
   regularizationRequests = [],
   onReviewRegularization,
+  onOpenWorkLogForUserAndDate,
   loading = false,
   workingDaysMap = {},
 }) => {
-  const [activeTab, setActiveTab] = useState<"monitoring" | "regularization" | "manage_users" | "attendance_history" | "member_calendar">("monitoring");
+  const [activeTab, setActiveTab] = useState<"monitoring" | "regularization" | "manage_users" | "attendance_history" | "member_calendar" | "worklog_audit">("monitoring");
   const [searchQuery, setSearchQuery] = useState("");
 
   const [historyRecords, setHistoryRecords] = useState<any[]>([]);
@@ -73,6 +79,48 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Work log audit state
+  const [workLogAuditDate, setWorkLogAuditDate] = useState<string>("");
+  const [workLogAuditData, setWorkLogAuditData] = useState<any>(null);
+  const [loadingWorkLogAudit, setLoadingWorkLogAudit] = useState<boolean>(false);
+  const [workLogStatusFilter, setWorkLogStatusFilter] = useState<string>("all");
+  const [workLogSearchQuery, setWorkLogSearchQuery] = useState<string>("");
+
+  const [remarkModalData, setRemarkModalData] = useState<{
+    isOpen: boolean;
+    userId: string;
+    userName: string;
+    date: string;
+    currentRemark: string;
+    workLogContent?: string;
+  }>({
+    isOpen: false,
+    userId: "",
+    userName: "",
+    date: "",
+    currentRemark: "",
+    workLogContent: "",
+  });
+
+  const fetchWorkLogAudit = async (targetDate?: string) => {
+    const d = targetDate !== undefined ? targetDate : (workLogAuditDate || new Date().toISOString().split("T")[0]);
+    setLoadingWorkLogAudit(true);
+    try {
+      const res = await apiAdminGetDailyWorkLogs(d);
+      setWorkLogAuditData(res);
+    } catch (err) {
+      console.error("Failed to fetch work log audit:", err);
+    } finally {
+      setLoadingWorkLogAudit(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "worklog_audit") {
+      fetchWorkLogAudit();
+    }
+  }, [activeTab, workLogAuditDate]);
 
   // Regularization requests state
   const [regFilter, setRegFilter] = useState<string>("all");
@@ -547,6 +595,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           >
             <CalendarIcon className="w-4 h-4" />
             <span>Inspect Member Calendar</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("worklog_audit")}
+            className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+              activeTab === "worklog_audit" ? "shadow-sm" : "opacity-75 hover:opacity-100"
+            }`}
+            style={{
+              backgroundColor:
+                activeTab === "worklog_audit" ? "var(--bg-surface-elevated)" : "transparent",
+              color: "var(--text-primary)",
+              border: activeTab === "worklog_audit" ? "1px solid var(--border-medium)" : "1px solid transparent",
+            }}
+          >
+            <FileText className="w-4 h-4 text-emerald-400" />
+            <span>Work Log Audit</span>
+            {workLogAuditData?.metrics?.missedCount > 0 && (
+              <span
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full border"
+                style={{
+                  backgroundColor: "var(--status-ooo-bg)",
+                  borderColor: "var(--status-ooo-border)",
+                  color: "var(--status-ooo-text)",
+                }}
+              >
+                {workLogAuditData.metrics.missedCount} Missed
+              </span>
+            )}
           </button>
         </div>
 
@@ -1901,6 +1978,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       attendanceRecords={userCalendarRecords}
                       workingDaysMap={workingDaysMap}
                       onAdminOverrideStatus={handleAdminOverrideAttendance}
+                      onOpenWorkLogForDate={(d) => {
+                        const targetUser = users.find((u) => u.id === selectedCalendarUserId || u._id === selectedCalendarUserId);
+                        onOpenWorkLogForUserAndDate?.(selectedCalendarUserId, targetUser?.name || "Member", d);
+                      }}
                       isAdmin={true}
                     />
                   )}
@@ -1910,6 +1991,245 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           ) : (
             <div className="p-12 text-center text-xs text-muted">
               Select a member from the dropdown above to inspect their attendance calendar.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 6. WORK LOG AUDIT TAB */}
+      {activeTab === "worklog_audit" && (
+        <div
+          className="rounded-2xl p-4 sm:p-6 border shadow-xl transition-all space-y-6 animate-fade-in"
+          style={{
+            backgroundColor: "var(--bg-surface)",
+            borderColor: "var(--border-subtle)",
+          }}
+        >
+          {/* Header Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b" style={{ borderColor: "var(--border-subtle)" }}>
+            <div>
+              <h2 className="text-base sm:text-lg font-black flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+                <FileText className="w-5 h-5 text-emerald-400" />
+                Daily Work Log Audit & Tracking
+              </h2>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                Track who submitted daily work logs vs who missed them, inspect logs, and leave supervisor remarks.
+              </p>
+            </div>
+
+            {/* Date Selection */}
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
+                Audit Date:
+              </label>
+              <input
+                type="date"
+                value={workLogAuditDate || new Date().toISOString().split("T")[0]}
+                onChange={(e) => {
+                  setWorkLogAuditDate(e.target.value);
+                  fetchWorkLogAudit(e.target.value);
+                }}
+                className="px-3 py-1.5 rounded-xl border text-xs font-mono font-bold"
+                style={{
+                  backgroundColor: "var(--bg-surface-elevated)",
+                  borderColor: "var(--border-medium)",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fetchWorkLogAudit(workLogAuditDate)}
+                className="p-2 rounded-xl border transition-all hover:brightness-125"
+                style={{
+                  backgroundColor: "var(--bg-surface-elevated)",
+                  borderColor: "var(--border-subtle)",
+                  color: "var(--text-secondary)",
+                }}
+                title="Refresh Audit Data"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingWorkLogAudit ? "animate-spin" : ""}`} />
+              </button>
+            </div>
+          </div>
+
+          {/* Daily Metrics Summary Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-3.5 rounded-xl border flex flex-col justify-between" style={{ backgroundColor: "var(--bg-surface-elevated)", borderColor: "var(--border-subtle)" }}>
+              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Total Members</span>
+              <div className="text-xl font-black mt-1" style={{ color: "var(--text-primary)" }}>
+                {workLogAuditData?.metrics?.totalUsers || users.length}
+              </div>
+              <span className="text-[10px]" style={{ color: "var(--text-secondary)" }}>Active Team Members</span>
+            </div>
+
+            <div className="p-3.5 rounded-xl border flex flex-col justify-between" style={{ backgroundColor: "var(--status-working-bg)", borderColor: "var(--status-working-border)" }}>
+              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--status-working-text)" }}>Submitted 🟢</span>
+              <div className="text-xl font-black mt-1" style={{ color: "var(--status-working-text)" }}>
+                {workLogAuditData?.metrics?.submittedCount || 0}
+              </div>
+              <span className="text-[10px]" style={{ color: "var(--status-working-text)" }}>Work Logs Logged</span>
+            </div>
+
+            <div className="p-3.5 rounded-xl border flex flex-col justify-between" style={{ backgroundColor: "var(--status-ooo-bg)", borderColor: "var(--status-ooo-border)" }}>
+              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--status-ooo-text)" }}>Missed / Pending 🔴</span>
+              <div className="text-xl font-black mt-1" style={{ color: "var(--status-ooo-text)" }}>
+                {workLogAuditData?.metrics?.missedCount || 0}
+              </div>
+              <span className="text-[10px]" style={{ color: "var(--status-ooo-text)" }}>No Work Log Submitted</span>
+            </div>
+
+            <div className="p-3.5 rounded-xl border flex flex-col justify-between" style={{ backgroundColor: "var(--bg-surface-elevated)", borderColor: "var(--border-subtle)" }}>
+              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Admin Remarks 💬</span>
+              <div className="text-xl font-black mt-1 text-indigo-400">
+                {workLogAuditData?.metrics?.reviewedCount || 0}
+              </div>
+              <span className="text-[10px]" style={{ color: "var(--text-secondary)" }}>Reviewed by Supervisor</span>
+            </div>
+          </div>
+
+          {/* Filters & Search Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border text-xs" style={{ backgroundColor: "var(--bg-surface-subtle)", borderColor: "var(--border-subtle)" }}>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-bold uppercase tracking-wider text-[10px]" style={{ color: "var(--text-muted)" }}>Filter:</span>
+              <button
+                type="button"
+                onClick={() => setWorkLogStatusFilter("all")}
+                className={`px-3 py-1 rounded-lg border font-bold text-xs transition-all ${workLogStatusFilter === "all" ? "shadow-xs" : "opacity-70"}`}
+                style={{
+                  backgroundColor: workLogStatusFilter === "all" ? "var(--bg-surface-elevated)" : "transparent",
+                  borderColor: workLogStatusFilter === "all" ? "var(--border-medium)" : "transparent",
+                  color: "var(--text-primary)",
+                }}
+              >
+                All Members ({workLogAuditData?.items?.length || 0})
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setWorkLogStatusFilter("submitted")}
+                className={`px-3 py-1 rounded-lg border font-bold text-xs transition-all ${workLogStatusFilter === "submitted" ? "shadow-xs" : "opacity-70"}`}
+                style={{
+                  backgroundColor: workLogStatusFilter === "submitted" ? "var(--status-working-bg)" : "transparent",
+                  borderColor: workLogStatusFilter === "submitted" ? "var(--status-working-border)" : "transparent",
+                  color: workLogStatusFilter === "submitted" ? "var(--status-working-text)" : "var(--text-secondary)",
+                }}
+              >
+                Submitted 🟢 ({workLogAuditData?.metrics?.submittedCount || 0})
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setWorkLogStatusFilter("missed")}
+                className={`px-3 py-1 rounded-lg border font-bold text-xs transition-all ${workLogStatusFilter === "missed" ? "shadow-xs" : "opacity-70"}`}
+                style={{
+                  backgroundColor: workLogStatusFilter === "missed" ? "var(--status-ooo-bg)" : "transparent",
+                  borderColor: workLogStatusFilter === "missed" ? "var(--status-ooo-border)" : "transparent",
+                  color: workLogStatusFilter === "missed" ? "var(--status-ooo-text)" : "var(--text-secondary)",
+                }}
+              >
+                Missed 🔴 ({workLogAuditData?.metrics?.missedCount || 0})
+              </button>
+            </div>
+
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "var(--text-muted)" }} />
+              <input
+                type="text"
+                placeholder="Search member name..."
+                value={workLogSearchQuery}
+                onChange={(e) => setWorkLogSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 rounded-xl border text-xs font-semibold"
+                style={{
+                  backgroundColor: "var(--bg-surface-elevated)",
+                  borderColor: "var(--border-medium)",
+                  color: "var(--text-primary)",
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Audit List Table */}
+          {loadingWorkLogAudit ? (
+            <div className="p-12 text-center text-xs font-mono font-bold animate-pulse">
+              Loading daily work log status records...
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border" style={{ borderColor: "var(--border-subtle)" }}>
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b text-[10px] font-bold uppercase tracking-wider" style={{ backgroundColor: "var(--bg-surface-elevated)", borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>
+                    <th className="p-3">Member Name</th>
+                    <th className="p-3">Role</th>
+                    <th className="p-3">Submission Status</th>
+                    <th className="p-3">Work Log Snippet</th>
+                    <th className="p-3">Admin Remark</th>
+                    <th className="p-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
+                  {(workLogAuditData?.items || [])
+                    .filter((item: any) => {
+                      if (workLogStatusFilter === "submitted" && !item.hasSubmitted) return false;
+                      if (workLogStatusFilter === "missed" && item.hasSubmitted) return false;
+                      if (workLogSearchQuery) {
+                        const q = workLogSearchQuery.toLowerCase();
+                        return item.userName.toLowerCase().includes(q) || item.userUsername.toLowerCase().includes(q);
+                      }
+                      return true;
+                    })
+                    .map((item: any) => (
+                      <tr key={item.userId} className="hover:bg-white/5 transition-colors">
+                        <td className="p-3 font-bold" style={{ color: "var(--text-primary)" }}>
+                          {item.userName}
+                          <span className="block text-[10px] font-mono font-normal" style={{ color: "var(--text-muted)" }}>
+                            @{item.userUsername}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border" style={{ backgroundColor: "var(--bg-surface-elevated)", borderColor: "var(--border-subtle)", color: "var(--text-secondary)" }}>
+                            {item.userRole}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          {item.hasSubmitted ? (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border inline-flex items-center gap-1" style={{ backgroundColor: "var(--status-working-bg)", borderColor: "var(--status-working-border)", color: "var(--status-working-text)" }}>
+                              <CheckCircle className="w-3 h-3" /> Submitted
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border inline-flex items-center gap-1" style={{ backgroundColor: "var(--status-ooo-bg)", borderColor: "var(--status-ooo-border)", color: "var(--status-ooo-text)" }}>
+                              <X className="w-3 h-3" /> Missed
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-3 max-w-xs truncate" style={{ color: "var(--text-secondary)" }}>
+                          {item.hasSubmitted ? item.contentSnippet || "(Formatted Rich Text)" : <span className="italic opacity-50">No log submitted for date</span>}
+                        </td>
+                        <td className="p-3 max-w-xs truncate font-mono text-[11px]">
+                          {item.adminRemark ? (
+                            <span className="text-indigo-400 font-semibold">&ldquo;{item.adminRemark}&rdquo;</span>
+                          ) : (
+                            <span className="opacity-40 italic">No remark</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => onOpenWorkLogForUserAndDate?.(item.userId, item.userName, workLogAuditDate || item.date)}
+                            className="px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:brightness-120 inline-flex items-center gap-1.5 shadow-xs"
+                            style={{
+                              backgroundColor: "var(--bg-surface-elevated)",
+                              borderColor: "var(--border-medium)",
+                              color: "var(--text-primary)",
+                            }}
+                          >
+                            <FileText className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>{item.hasSubmitted ? "Inspect Log / Remark" : "Write Log / Override"}</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
